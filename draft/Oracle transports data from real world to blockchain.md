@@ -105,6 +105,9 @@ node bridge -H 127.0.0.1:8545 -a 1
 
 gitter message
 ASK: @oraclize-support Will the ethereum-bridge solve it so I can run the RandomExample on a private net?
+
 ANSWER:@tsuriyathep noy really: the random ds proof can be valid on public chains only, if you need to test it privately, disable temporarily the proof verification (but don't forget to put it back before going to production!)
+
 ASK:@oraclize-support I would really like to get the RandomSample working, is it possible to get a short tutorial or add more detail to the readme file, so we can get instructions on how to get it up and running in any kind of development environment?
+
 ANSWER:@tsuriyathep we will do that, thanks for the suggestion. In the meantime, let us help you here! It should work out of the box in any context when you don't verify the authenticity proof, did you get it working in this way?
