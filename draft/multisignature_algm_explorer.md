@@ -19,6 +19,7 @@ https://github.com/OutCast3k/coinbin/tree/master/js
 参与者提供各自的 34 位钱包地址和 66 位公钥
 
 多方签名地址以 3 开头, 个人钱包地址以 1 开头
+以比特币系统为例, 其非对称加密机制如图 4所示: 比特币系统一般通过调用操作系统底层的随机数生成器来生成256位随机数作为私钥. 比特币私钥的总量可达22562256, 极难通过遍历全部私钥空间来获得存有比特币的私钥, 因而是密码学安全的. 为便于识别, 256位二进制形式的比特币私钥将通过SHA256哈希算法和Base58转换, 形成50个字符长度的易识别和书写的私钥提供给用户; 比特币的公钥是由私钥首先经过Secp256k1椭圆曲线算法生成65字节长度的随机数. 该公钥可用于产生比特币交易时使用的地址, 其生成过程为首先将公钥进行SHA256 和RIPEMD160 双哈希运算并生成20字节长度的摘要结果(即hash160结果), 再经过SHA256哈希算法和Base58转换形成33字符长度的比特币地址 [19]. 公钥生成过程是不可逆的, 即不能通过公钥反推出私钥.
 wiki 上的流程:
 0 - Having a private ECDSA key   64bytes
 
@@ -140,3 +141,18 @@ http://book.8btc.com/books/6/ethereum/_book/create-security-signature-wallet.htm
 https://raw.githubusercontent.com/ethereum/dapp-bin/master/wallet/wallet.sol
 在这篇文章中提到上述智能合约 outdated,updated is
 https://ethereum.stackexchange.com/questions/6827/wheres-the-solidity-code-for-mists-default-multi-sig-contract-wallet
+
+
+多方签名算法研究:
+面向多用户的无证书数字签名方案研究
+http://cdmd.cnki.com.cn/Article/CDMD-10358-1015723060.htm
+一种基于 ECDSA 的有序多重数字签名方案
+有序多重签名 (广播多重签名见论文附录 5)
+http://www.cqvip.com/qk/87339a/201602z/68789083504849544853485656.html
+电子合同签署中有序多重数字签名的应用
+http://www.cqvip.com/read/read.aspx?id=668058602
+更快速更高效的基于超椭圆曲线双线性对用于数字签名
+(基于 RSA 的有序和广播签名方案见附录 2, 椭圆曲线双线性引用 4-6)
+http://www.cqvip.com/qk/88997x/201661/669544274.html
+基于 Koblitz 曲线的数字签名研究
+http://cdmd.cnki.com.cn/Article/CDMD-10060-1015367328.htm
