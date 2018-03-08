@@ -7,6 +7,13 @@
 
 首先获得的提示只有上面的第一段的那一句话, 感觉太过笼统, 无从下手, 于是又和需求方询问, 得到的回答是第二段的长篇幅回答, 第二个回答具体回答了什么是多方签名, 这个回答还是有些模糊, 关键句子在于最后一句, 建议能用 C++ 结合现有的签名算法实现一个区块链转帐场景下的多重签名实例. 抛开编程语言 C++ 不说, 关键点有: 现有的签名算法, 区块链转账场景实例. 签名算法是指现有的多方签名算法还是现有的单方签名算法? 区块链转账场景具体是指什么? 是指自己搭建一个私有区块链网络, 然后在上面实现多方签名实例? 还是指做一个模拟区块链运行的 demo, 省去大量细节, 只包含创建帐号和转账等基本功能, 然后实现多方签名吗? 如果是指前者, 那么规定编程语言为 C++ 意义在何处? 因为前者完全可以通过引入一个已有的成熟的多方签名智能合约实现其功能, 而智能合约是用 solidity 等非 C++ 语言编写. 如果是后者, 使用 C++ 模拟区块链运行就说得通了, 同时无法引入已有的多方签名智能合约, 只能自己实现多方签名底层细节打包成函数供上层调用.
 
+最终决定:
+模拟场景精化描述:
+  使用 C++ 编写多方签名算法实现转账场景, 场景包括: 提供密钥来生成公钥和个人钱包地址, 使用多方 (n 方) 的公钥生成共有钱包地址, 从个人钱包转账到共有钱包, 通过 m(m<=n) 个密钥解锁共有钱包转账给私有钱包.
+对主流算法研究:
+  对现有的三种多方签名算法研究分析其优缺点.
+
+
 现有的签名算法
 
 普通找到的
@@ -133,10 +140,17 @@ http://www.soroushjp.com/2014/12/20/bitcoin-multisig-the-hard-way-understanding-
 https://github.com/soroushjp/go-bitcoin-multisig
 
 过程:
-提供n个16进制格式的
+### 生成多方签名地址
+提供 n 个 16 进制格式的公钥, 现有许多生成公钥 / 密钥对的工具, 但是在这里我们使用了集成在 go-bitcoin-multisig 中的一个. 这样的公钥 / 密钥对在密码学上足够安全, 因为使用了 go 语言的 crypto/rand 包, 一个使用了在类 unix 系统中的 / dev/urandom 的 API 或在 Windows 系统的 CryptoGenRandom 的 API.
 
+根据比特币协议 [!protocol](https://bitcoin.org/en/developer-guide#standard-transactions), 一个有效的 multisignature redeem script 看起来像这样:<OP_2><A pubkey><B pubkey><C pubkey><OP_3><OP_CHECKMULTISIG>
 
+P2SH address 通过另外两步来生成.
+第一步: 对 redeem script 进行两次哈希算法, 第一次是将 redeem script 进行 SHA256 哈希, 第二次是将第一次得到的结果再进行 RIPEMD160 哈希
+第二步: 对上面得到的结果加上前缀 (0X05), 转换成 Base58Check 编码
 
+### 转账到多方签名地址
+想要转账到多方签名地址, 我们需要一个比特币转账源. go-bitcoin-multisig 可以从标准的 P2PKH 转账, 我们需要交易 Id(transaction id,txid), 对应的私钥, 转账额度 (多余的额度将作为小费), 目标地址 P2SH(刚刚生成的) 作为输入,
 appendix
 https://bitcoinmagazine.com/articles/multisig-future-bitcoin-1394686504/
 以太坊使用的
@@ -161,3 +175,41 @@ http://www.cqvip.com/read/read.aspx?id=668058602
 http://www.cqvip.com/qk/88997x/201661/669544274.html
 基于 Koblitz 曲线的数字签名研究
 http://cdmd.cnki.com.cn/Article/CDMD-10060-1015367328.htm
+
+
+
+
+
+
+自己测试:
+生成公私钥:
+用户 1:
+address:
+1HDPBHffZmqEpYkj72Q73dj49yfkKCXXL8
+public key:
+036f1a42c28ac8372329fcdf2bda7ec6cccc3af6c7e1e7d5731eba7a4b8a6c2781
+private key:
+L3QMGJYk3s8bFdNMPSCNttxVazMUUW56EbaEwjA5f3vCm8yU9zPX
+
+用户 2:
+address:
+1CtNHtfEWsyU5auXeLKwgBPKhq65ygDiGL
+public key:
+02e6271c2c67fa50a9e776285bc9b03057caa0cf018e88c757fbe2303c525d66e8
+private key:
+L5652sT2YDh59foP71Cp84e4nABTaQxeiNDHqttSEtJGtfQ76pyF
+
+用户 3:
+address:
+1DRnZu4UoRcQa9NKh2B9knoMEQZiJgtQjv
+public key:
+02e43506b90a1989239f6fe08fa7585aabd6cedd5b8f9d2f237f265d1c57af0c5e
+private key:
+L4H87yiZiG9F9pH3ZDsPLtaY9iad22GjFBebKYQyV1fKmSZPj8Zi
+
+share address:
+3C8Q7SbAPoxZyRmy8GBSHhdrU5BVLFzne1
+redeem script:
+5221036f1a42c28ac8372329fcdf2bda7ec6cccc3af6c7e1e7d5731eba7a4b8a6c27812102e6271c2c67fa50a9e776285bc9b03057caa0cf018e88c757fbe2303c525d66e82102e43506b90a1989239f6fe08fa7585aabd6cedd5b8f9d2f237f265d1c57af0c5e53ae
+url:
+https://coinb.in/?verify=5221036f1a42c28ac8372329fcdf2bda7ec6cccc3af6c7e1e7d5731eba7a4b8a6c27812102e6271c2c67fa50a9e776285bc9b03057caa0cf018e88c757fbe2303c525d66e82102e43506b90a1989239f6fe08fa7585aabd6cedd5b8f9d2f237f265d1c57af0c5e53ae#verify
