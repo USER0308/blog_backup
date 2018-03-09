@@ -6,7 +6,7 @@
 
 plugins:
 * markdown-preview-enhanced
-    key: ctrl + shift + map  show/hide markdown preview
+    key: `ctrl + shift + m`  show/hide markdown preview
 * markdown-assistant
 * minimap
 * open-rencent
@@ -19,8 +19,8 @@ plugins:
     upload pictures to qiniu.com
 
 ### sublime text
-  key: ctrl + b  compile
-       ctrl + shift + b build and run
+  key: `ctrl + b`  compile
+       `ctrl + shift + b` build and run
 ### vim
 
 ### VS code
@@ -28,13 +28,13 @@ plugins:
 ## IDE
 
 ### webstorm
-key: F11 add bookmark at current line
-shift + F11 edit/show the bookmark
-F4 go to the implementing
+key: `F11` add bookmark at current line
+`shift + F11` edit/show the bookmark
+`F4` go to the implementing
 ## browser
 
 ### chrome
-key: ctrl + shift + b  show/hide bookmark
+key: `ctrl + shift + b`  show/hide bookmark
 * vimium
 key:
 ```
