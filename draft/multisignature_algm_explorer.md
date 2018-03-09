@@ -178,8 +178,20 @@ http://cdmd.cnki.com.cn/Article/CDMD-10060-1015367328.htm
 
 
 
+目前比特币使用的是 ECDSA 椭圆曲线数字签名算法
+即将替换的是 Schnorr 签名
+在这种情况下，Schnorr 签名的大小随签名者的数量呈线性增长。为了有用和实用，Schnorr 签名方案的产生与签名者的数量无关，并且只是接近于一个普通签名方案的签名而已。”
+很多密码学家认为 Schnorr 签名在相关应用中是最好的，因为它有很高水平的正确性，没有延展性问题，验证速度相当快，最重要的是支持多重签名：可以把多个签名聚合成一个新的签名。
+然而，到目前为止，Schnorr 签名还不能在比特币中使用，另外一种类型的签名策略——椭圆曲线数字签名算法（ECDSA）集成在比特币协议中，改变这些需要硬分叉。
 
+隔离见证此时就发挥了作用。
 
+隔离见证会把所有的签名数据转移到一个交易上的独立空间中：见证数据（witness）将不会被嵌入 “老的” 比特币协议中。多亏有了脚本版本控制，所有见证中的规则都可以通过软分叉来改变，包括这种签名策略的类型。
+
+首先，签名数量减少了，每个区块中写入的交易数据容量就能增加。其次，签名融合之后，交易来源就很难被查到，因此该项技术还能提高隐私性。
+
+缺点:
+Unfortunately, unlike ECDSA, the Schnorr algorithm has not been standardized since its invention, likely because of the original patent enforced on it (which has since expired). While the general outlines of the system are mathematically sound, the lack of documentation and specification makes it more challenging to implement. Specifically, its application to the ephemeral keypairs design of Bitcoin involves security considerations that require further optimization.
 
 自己测试:
 生成公私钥:
