@@ -1,3 +1,5 @@
+# Atom 搭配七牛图床, 像 word 一样 Ctrl + v 粘贴图片, 上传到图床
+
 到七牛官网注册帐号, 创建存储空间, 获得分配的域名, 获得密钥 AK/SK 对
 
 ![domain](http://ovt2bylq8.bkt.clouddn.com/45db02a83c0cb316627838eb5a981adb.png)
