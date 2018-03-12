@@ -5,9 +5,9 @@
 
 首先, 先确定提交表单的 URL 是全校通用的, 是手机和电脑全平台适用的, 分别在不同的装有 AC 面板的地方连上 wifi, 测试登录脚本 (确定 ACname 和 ACip 唯一), 分别使用不同的手机电脑测试 (确定 ip 是通过 DHCP 分配), 确定下来之后就开始编写脚本了, 首先项目分为两部分, 一部分负责提供帐号密码 (account-password), 称为 APManager, 一部分负责登录验证, 称为 Snipper, 于是我们就有了两个类, 分别对其进行函数填充.
 
-APManager 主要变量有 account_list, 一个存储着所有帐号的 list;account_index, 一个指向 list 的当前下标, 每次测试登录之后, index 都会前移, 同理还有 password_list 和 password_index, 然后有个 generate_account 函数负责按照一定规律 (固定前缀 / 递增) 生成 account 并保存在 accounts.txt 中, 和生成密码字典的 generate_password, 获得下一个 account/password 的 next_account 和 next_password, 每次获取时都会先调用 generate_account/password, 检查下标是否越界, 获得下一个 account/password, 或者返回 None, 还有个 reset_password, 用来将 password_index 归零, 因为 account_list 中的每一个 account 都要用到 password_list 中每一项, 所以需要归零, 而 account_index 不需要归零, 因为一旦测试完了所有的 account, 脚本也就运行结束了, 最后一个函数是 read_file, 负责从文件中读取 account 和 password 组成两个 list.
+`APManager` 主要变量有 `account_list`, 一个存储着所有帐号的 list;`account_index`, 一个指向 list 的当前下标, 每次测试登录之后, index 都会前移, 同理还有 `password_list` 和 `password_index`, 然后有个 `generate_account` 函数负责按照一定规律 (固定前缀 / 递增) 生成 account 并保存在 `accounts.txt` 中, 和生成密码字典的 `generate_password`, 获得下一个 account/password 的 `next_account` 和 `next_password`, 每次获取时都会先调用 generate_account/password, 检查下标是否越界, 获得下一个 account/password, 或者返回 `None`, 还有个 `reset_password`, 用来将 `password_index` 归零, 因为 `account_list` 中的每一个 account 都要用到 `password_list` 中每一项, 所以需要归零, 而 `account_index` 不需要归零, 因为一旦测试完了所有的 account, 脚本也就运行结束了, 最后一个函数是 `read_file`, 负责从文件中读取 account 和 password 组成两个 list.
 
-Snipper 主要变量有 APManager 和 URL, 主要函数有: contract, 负责将 account 和 password(从 APManager 中 next_account 和 next_password 函数获得) 拼接起来组成表单; snip, 负责发起登录请求和结果判断; shedule, 负责调度 APManager 产生 account/password 和 snip
+`Snipper` 主要变量有 `APManager` 和 `URL`, 主要函数有: `contract`, 负责将 account 和 password(从 `APManager` 中 `next_account` 和 `next_password` 函数获得) 拼接起来组成表单; `snip`, 负责发起登录请求和结果判断; `shedule`, 负责调度 `APManager` 产生 account/password 和 `snip`
 
 两个类的代码如下:
 `APManager.py`
