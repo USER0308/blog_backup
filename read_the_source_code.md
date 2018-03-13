@@ -50,8 +50,59 @@ index.html 主要是使用 bootstrap 组件来编写, 然后在 coinbin.js 里�
 
 下面看主要的几个功能:
 功能 1: 生成 public key/private key
+首先在浏览器中打开 index.html, 选择 `New`->`address`
+![new address](http://ovt2bylq8.bkt.clouddn.com/fb4cf957c4a6f394e8223393f87208fc.png)
+右键点击 Generate 按钮, 审查元素, 获得按钮的 id 为 `newKeysBtn`
+`<input type="button" class="btn btn-primary" value="Generate" id="newKeysBtn" _vimium-has-onclick-listener=""data-original-title="" title="">`
+回到 coinbin.js,`ctrl + F` 查找 `newKeysBtn`, 找到点击该按钮触发的函数
+```
+$("#newKeysBtn").click(function(){
+		coinjs.compressed = false;
+		if($("#newCompressed").is(":checked")){
+			coinjs.compressed = true;
+		}
+		var s = ($("#newBrainwallet").is(":checked")) ? $("#brainwallet").val() : null;
+		var coin = coinjs.newKeys(s);
+		$("#newBitcoinAddress").val(coin.address);
+		$("#newPubKey").val(coin.pubkey);
+		$("#newPrivKey").val(coin.wif);
 
+		/* encrypted key code */
+		if((!$("#encryptKey").is(":checked")) || $("#aes256pass").val()==$("#aes256pass_confirm").val()){
+			$("#aes256passStatus").addClass("hidden");
+			if($("#encryptKey").is(":checked")){
+				$("#aes256wifkey").removeClass("hidden");
+			}
+		} else {
+			$("#aes256passStatus").removeClass("hidden");
+		}
+		$("#newPrivKeyEnc").val(CryptoJS.AES.encrypt(coin.wif, $("#aes256pass").val())+'');
 
+	});
+```
+在该函数中, 调用了 coinjs.newKeys(s), 参数 s 在勾选 `brainwallet` 时有效, barinwallet 就相当于我们平时的密码, 在脑中想一个密码, 系统根据这个密码生成一个帐号, 如果不提供密码, 会直接生成帐号和密码 (公钥 / 私钥), 此处参数 s 为 null.
+再看 coinjs 中的 newKey 函数,
+```
+/* generate a private and public keypair, with address and WIF address */
+	coinjs.newKeys = function(input){
+		var privkey = (input) ? Crypto.SHA256(input) : this.newPrivkey();
+		var pubkey = this.newPubkey(privkey);
+		return {
+			'privkey': privkey,
+			'pubkey': pubkey,
+			'address': this.pubkey2address(pubkey),
+			'wif': this.privkey2wif(privkey),
+			'compressed': this.compressed
+		};
+	}
+```
+在这里,`input` 值为 `null`, 所以先调用 `newPrivatekey` 函数产生一个私钥, 然后调用 `newPubkey` 函数把私钥作为参数传进去, 得到公钥, 调用 pubkey2address, 传入 pubkey 得到钱包地址, 调用 privkey2wif, 传入 privkey 得到 WIF 地址 (Wallet Import Format), 把 (公钥 / 私钥 / 钱包地址 / wif 地址 / 是否压缩) 作为对象属性, 返回一个对象, 然后在 coinbin.js 中将钱包地址 / 公钥 / WIF 地址填到对应的文本框中
+```
+$("#newBitcoinAddress").val(coin.address);
+$("#newPubKey").val(coin.pubkey);
+$("#newPrivKey").val(coin.wif);
+```
+值得注意的是,
 功能 2: 多方签名
 
 (typeof Crypto=="undefined"||!Crypto.util)&&function(){
