@@ -96,13 +96,108 @@ $("#newKeysBtn").click(function(){
 		};
 	}
 ```
-在这里,`input` 值为 `null`, 所以先调用 `newPrivatekey` 函数产生一个私钥, 然后调用 `newPubkey` 函数把私钥作为参数传进去, 得到公钥, 调用 pubkey2address, 传入 pubkey 得到钱包地址, 调用 privkey2wif, 传入 privkey 得到 WIF 地址 (Wallet Import Format), 把 (公钥 / 私钥 / 钱包地址 / wif 地址 / 是否压缩) 作为对象属性, 返回一个对象, 然后在 coinbin.js 中将钱包地址 / 公钥 / WIF 地址填到对应的文本框中
+在这里,`input` 值为 `null`, 所以先调用 `newPrivatekey` 函数产生一个私钥, 然后调用 `newPubkey` 函数把私钥作为参数传进去, 得到公钥, 调用 `pubkey2address`, 传入 `pubkey` 得到钱包地址, 调用 `privkey2wif`, 传入 `privkey` 得到 `WIF` 地址 (Wallet Import Format), 把 (公钥 / 私钥 / 钱包地址 / wif 地址 / 是否压缩) 作为对象属性, 返回一个对象, 然后在 coinbin.js 中将钱包地址 / 公钥 / WIF 地址填到对应的文本框中
 ```
 $("#newBitcoinAddress").val(coin.address);
 $("#newPubKey").val(coin.pubkey);
 $("#newPrivKey").val(coin.wif);
 ```
-值得注意的是,
+![encrypt text](http://ovt2bylq8.bkt.clouddn.com/8e5d0014215daa0f23c023dbccd7fa27.png)
+值得注意的是, 还有一个隐藏文本框, id 为 encryptKey, 只有在勾选上 `Encrypt Private Key with AES-256 Password` 的时候才会显示出来, 并且需要填写加密用的密码, 文本框的内容是使用密码加密之后的 WIF 地址.
+现在来研究 newPrivKey,newPubKey,pubkey2address,privkey2wif 这几个函数
+```
+/* generate a new random private key */
+	coinjs.newPrivkey = function(){
+		var x = window.location;
+		x += (window.screen.height * window.screen.width * window.screen.colorDepth);
+		x += coinjs.random(64);
+		x += (window.screen.availHeight * window.screen.availWidth * window.screen.pixelDepth);
+		x += navigator.language;
+		x += window.history.length;
+		x += coinjs.random(64);
+		x += navigator.userAgent;
+		x += 'coinb.in';
+		x += (Crypto.util.randomBytes(64)).join("");
+		x += x.length;
+		var dateObj = new Date();
+		x += dateObj.getTimezoneOffset();
+		x += coinjs.random(64);
+		x += (document.getElementById("entropybucket")) ? document.getElementById("entropybucket").innerHTML : '';
+		x += x+''+x;
+		var r = x;
+		for(i=0;i<(x).length/25;i++){
+			r = Crypto.SHA256(r.concat(x));
+		}
+		var checkrBigInt = new BigInteger(r);
+		var orderBigInt = new BigInteger("fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
+		while (checkrBigInt.compareTo(orderBigInt) >= 0 || checkrBigInt.equals(BigInteger.ZERO) || checkrBigInt.equals(BigInteger.ONE)) {
+			r = Crypto.SHA256(r.concat(x));
+			checkrBigInt = new BigInteger(r);
+		}
+		return r;
+	}
+```
+有没有觉得稀里糊涂的? 看了源码也不太知道到底干了些什么, 于是打开浏览器的控制台, 运行一下
+`console.log(coinjs.newPrivKey())`
+输出
+`19bcd3173cb7480356ba16d47c6d6e2ce04c9ea9d358ba39b58a4bbce8b92a44`
+一共 64 位十六进制字符
+也就是说上面这个函数是用于随机生成 64 位十六进制字符
+
+```
+/* generate a public key from a private key */
+	coinjs.newPubkey = function(hash){
+		var privateKeyBigInt = BigInteger.fromByteArrayUnsigned(Crypto.util.hexToBytes(hash));
+		var curve = EllipticCurve.getSECCurveByName("secp256k1");
+
+		var curvePt = curve.getG().multiply(privateKeyBigInt);
+		var x = curvePt.getX().toBigInteger();
+		var y = curvePt.getY().toBigInteger();
+
+		var publicKeyBytes = EllipticCurve.integerToBytes(x, 32);
+		publicKeyBytes = publicKeyBytes.concat(EllipticCurve.integerToBytes(y,32));
+		publicKeyBytes.unshift(0x04);
+
+		if(coinjs.compressed==true){
+			var publicKeyBytesCompressed = EllipticCurve.integerToBytes(x,32)
+			if (y.isEven()){
+				publicKeyBytesCompressed.unshift(0x02)
+			} else {
+				publicKeyBytesCompressed.unshift(0x03)
+			}
+			return Crypto.util.bytesToHex(publicKeyBytesCompressed);
+		} else {
+			return Crypto.util.bytesToHex(publicKeyBytes);
+		}
+	}
+```
+
+```
+/* provide a public key and return address */
+	coinjs.pubkey2address = function(h, byte){
+		var r = ripemd160(Crypto.SHA256(Crypto.util.hexToBytes(h), {asBytes: true}));
+		r.unshift(byte || coinjs.pub);
+		var hash = Crypto.SHA256(Crypto.SHA256(r, {asBytes: true}), {asBytes: true});
+		var checksum = hash.slice(0, 4);
+		return coinjs.base58encode(r.concat(checksum));
+	}
+```
+```
+/* provide a privkey and return an WIF  */
+	coinjs.privkey2wif = function(h){
+		var r = Crypto.util.hexToBytes(h);
+
+		if(coinjs.compressed==true){
+			r.push(0x01);
+		}
+
+		r.unshift(coinjs.priv);
+		var hash = Crypto.SHA256(Crypto.SHA256(r, {asBytes: true}), {asBytes: true});
+		var checksum = hash.slice(0, 4);
+
+		return coinjs.base58encode(r.concat(checksum));
+	}
+```
 功能 2: 多方签名
 
 (typeof Crypto=="undefined"||!Crypto.util)&&function(){
