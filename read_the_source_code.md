@@ -49,10 +49,13 @@
 index.html 主要是使用 bootstrap 组件来编写, 然后在 coinbin.js 里绑定事件, 触发事件调用 coin.js 中的函数, coin.js 中又会调用其他 js 文件中的辅助函数 (加密解密 / 编码解码 / 进制转换等)
 
 下面看主要的几个功能:
-功能 1: 生成 public key/private key
+
+## 功能 1: 生成 public key/private key
+
 首先在浏览器中打开 index.html, 选择 `New`->`address`
 ![new address](http://ovt2bylq8.bkt.clouddn.com/fb4cf957c4a6f394e8223393f87208fc.png)
 右键点击 Generate 按钮, 审查元素, 获得按钮的 id 为 `newKeysBtn`
+
 `<input type="button" class="btn btn-primary" value="Generate" id="newKeysBtn" _vimium-has-onclick-listener=""data-original-title="" title="">`
 回到 coinbin.js,`ctrl + F` 查找 `newKeysBtn`, 找到点击该按钮触发的函数
 ```
@@ -139,9 +142,13 @@ $("#newPrivKey").val(coin.wif);
 ```
 有没有觉得稀里糊涂的? 看了源码也不太知道到底干了些什么, 于是打开浏览器的控制台, 运行一下
 `console.log(coinjs.newPrivKey())`
+
 输出
+
 `19bcd3173cb7480356ba16d47c6d6e2ce04c9ea9d358ba39b58a4bbce8b92a44`
+
 一共 64 位十六进制字符
+
 也就是说上面这个函数是用于随机生成 64 位十六进制字符
 
 ```
@@ -198,7 +205,7 @@ $("#newPrivKey").val(coin.wif);
 		return coinjs.base58encode(r.concat(checksum));
 	}
 ```
-功能 2: 多方签名
+## 功能 2: 多方签名
 
 (typeof Crypto=="undefined"||!Crypto.util)&&function(){
   var f=window.Crypto={},
