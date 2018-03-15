@@ -154,6 +154,10 @@ console.log(typeof priv_key)
 一共 64 位十六进制字符
 
 也就是说上面这个函数是用于随机生成 64 位十六进制字符
+更为科学的解释:
+>
+⽣成密钥的第⼀步也是最重要的⼀步， 是要找到⾜够安全的熵源， 即随机性来源。 ⽣成⼀个⽐特币私钥在本质上与“在1到2^256之间选⼀个数字”⽆异。 只要选取的结果是不可预测或不可重复的， 那么选取数字的具体⽅法并不重要。 ⽐特币软件使⽤操作系统底层的随机数⽣成器来产⽣256位的熵（ 随机性） 。 通常情况下， 操作系统随机数⽣成器由⼈⼯的随机源进⾏初始化， 也可能需要通过⼏秒钟内不停晃动⿏标等⽅式进⾏初始化。 对于真正的偏执狂， 可以使⽤掷骰⼦的⽅法， 并⽤铅笔和纸记录。
+>
 
 ```
 /* generate a public key from a private key */
@@ -183,7 +187,7 @@ console.log(typeof priv_key)
 	}
 ```
 这是使用了椭圆曲线加密算法, 具体的介绍见 [这里](http://pangjiuzala.github.io/2016/03/03/Bitcoin%E5%8A%A0%E5%AF%86%E6%8A%80%E6%9C%AF%E4%B9%8B%E6%A4%AD%E5%9C%86%E6%9B%B2%E7%BA%BF%E5%AF%86%E7%A0%81%E5%AD%A6/)
-另外一篇简单介绍:
+另外一篇简单介绍椭圆曲线加密算法:
 >
 > 作者：知乎用户
 > 链接：https://www.zhihu.com/question/26662683/answer/325511510
@@ -213,119 +217,9 @@ console.log(typeof priv_key)
 > n = 0xFFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFE BAAEDCE6 AF48A03B BFD25E8C D0364141
 > h = 01
 
+该函数作用:
+1 - Take the corresponding public key generated with it (65 bytes, 1 byte 0x04, 32 bytes corresponding to X coordinate, 32 bytes corresponding to Y coordinate)
 
-先是调用了 hexToBytes, 把 64 位 string 类型的字符传进去
-```
-hexToBytes:function(b){
-  for(var a=[],c=0;c<b.length;c+=2)
-    a.push(parseInt(b.substr(c,2),16));
-  return a},
-```
-再看 substr 函数, 这是个 EcmaScript.js 里的函数, 函数原型
-```
-/**
-@param {Number} start
-@param {Number} [length]
-@return {string}
-*/
-String.prototype.substr = function(start,length) {};
-```
-所以 hexToBytes 的作用是, 将 64 位 string 类型的字符切割成 2 个字符一组, 并将这两个一组的字符转化为 16 进制的 Number 类型, 最后将这 32 个 intpush 进一个数组里返回给调用者,[0x11,0x22,,,]
-再看 BigInteger.fromByteArrayUnsigned
-```
-/**
- * Turns a byte array into a big integer.
- *
- * This function will interpret a byte array as a big integer in big
- * endian notation and ignore leading zeros.
- */
-BigInteger.fromByteArrayUnsigned = function(ba) {
-
-  if (!ba.length) {
-    return new BigInteger.valueOf(0);
-  } else if (ba[0] & 0x80) {
-    // Prepend a zero so the BigInteger class doesn't mistake this
-    // for a negative integer.
-    return new BigInteger([0].concat(ba));
-  } else {
-    return new BigInteger(ba);
-  }
-};
-```
-这里可以展开说一下, 提示到 big endian, 说明最高字节在地址最低位，最低字节在地址最高位，依次排列,
-附加一些 big endian 和 little endian 的相关说明, 就是我们在计算机组成原理中学到的大端, 小端
-a) Little-Endian 就是低位字节排放在内存的低地址端, 高位字节排放在内存的高地址端
-b) Big-Endian 就是高位字节排放在内存的低地址端, 低位字节排放在内存的高地址端
-一个例子：
-如果我们将 0x1234abcd 写入到以 0x0000 开始的内存中，则结果为
-                big-endian     little-endian
-0x0000     0x12              0xcd
-0x0001     0x34              0xab
-0x0002     0xab              0x34
-0x0003     0xcd              0x12
-参考链接: http://blog.csdn.net/sunshine1314/article/details/2309655
-接着看 ba[0] & 0x80, 十六进制的 0x80 转化为十进制的 128, 转化二进制为 10000000, 两个相与, 如果 ba[0] 为正数 1(其实是小于 128 的十进制整数 / 小于 0x80 的十六进制整数), 转化为二进制之后为 00000001, 相与之后为 0,if 语句为假, 直接执行 new BigInteger(ba), 如果 ba[0] 为负数 - 1(其实是大于 128 的十进制整数 / 大于 0x80 的十六进制整数), 转化为二进制之后为 10000001, 相与之后为 128>0,if 语句为真, 执行函数体, 在 ba 数组头添加上一个 0 元素, 转化为正数, 为什么是 128 呢? 因为我们生成密钥的时候每两个字符转化为一个十六进制的 Number, 两个字符最大为 ff, 转化为 16 进制即 0xff, 即二进制的 11111111, 首位符号位判断正负,
-然后传入 ba 数组, 调用 BigInteger 构造函数
-```
-// (public) Constructor
-function BigInteger(a,b,c) {
-  if (!(this instanceof BigInteger)) {
-    return new BigInteger(a, b, c);
-  }
-
-  if(a != null) {
-    if("number" == typeof a) this.fromNumber(a,b,c);
-    else if(b == null && "string" != typeof a) this.fromString(a,256);
-    else this.fromString(a,b);
-  }
-}
-```
-调用 `this.fromString(a,256)`
-在原型中定义了
-`proto.fromString = bnpFromString;`
-所以看 `bnpFromString`
-```
-// (protected) set from string and radix
-function bnpFromString(s,b) {
-  var self = this;
-
-  var k;
-  if(b == 16) k = 4;
-  else if(b == 8) k = 3;
-  else if(b == 256) k = 8; // byte array
-  else if(b == 2) k = 1;
-  else if(b == 32) k = 5;
-  else if(b == 4) k = 2;
-  else {self.fromRadix(s,b); return; }
-  self.t = 0;
-  self.s = 0;
-  var i = s.length, mi = false, sh = 0;
-  while(--i>= 0) {
-    var x = (k==8)?s[i]&0xff:intAt(s,i);
-    if(x < 0) {
-      if(s.charAt(i) == "-") mi = true;
-      continue;
-    }
-    mi = false;
-    if(sh == 0)
-      self[self.t++] = x;
-    else if(sh+k> self.DB) {
-      self[self.t-1] |= (x&((1<<(self.DB-sh))-1))<<sh;
-      self[self.t++] = (x>>(self.DB-sh));
-    }
-    else
-      self[self.t-1] |= x<<sh;
-    sh += k;
-    if(sh>= self.DB) sh -= self.DB;
-  }
-  if(k == 8 && (s[0]&0x80) != 0) {
-    self.s = -1;
-    if(sh> 0) self[self.t-1] |= ((1<<(self.DB-sh))-1)<<sh;
-  }
-  self.clamp();
-  if(mi) BigInteger.ZERO.subTo(self,self);
-}
-```
 ```
 /* provide a public key and return address */
 	coinjs.pubkey2address = function(h, byte){
@@ -336,19 +230,20 @@ function bnpFromString(s,b) {
 		return coinjs.base58encode(r.concat(checksum));
 	}
 ```
+2 - Perform SHA-256 hashing on the public key
+3 - Perform RIPEMD-160 hashing on the result of SHA-256
+4 - Add version byte in front of RIPEMD-160 hash (0x00 for Main Network)
+(note that below steps are the Base58Check encoding, which has multiple library options available implementing it)
 ```
 /* provide a privkey and return an WIF  */
 	coinjs.privkey2wif = function(h){
 		var r = Crypto.util.hexToBytes(h);
-
 		if(coinjs.compressed==true){
 			r.push(0x01);
 		}
-
 		r.unshift(coinjs.priv);
 		var hash = Crypto.SHA256(Crypto.SHA256(r, {asBytes: true}), {asBytes: true});
 		var checksum = hash.slice(0, 4);
-
 		return coinjs.base58encode(r.concat(checksum));
 	}
 ```
