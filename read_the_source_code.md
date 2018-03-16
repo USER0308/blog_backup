@@ -108,6 +108,8 @@ $("#newPrivKey").val(coin.wif);
 ![encrypt text](http://ovt2bylq8.bkt.clouddn.com/8e5d0014215daa0f23c023dbccd7fa27.png)
 值得注意的是, 还有一个隐藏文本框, id 为 encryptKey, 只有在勾选上 `Encrypt Private Key with AES-256 Password` 的时候才会显示出来, 并且需要填写加密用的密码, 文本框的内容是使用密码加密之后的 WIF 地址.
 现在来研究 newPrivKey,newPubKey,pubkey2address,privkey2wif 这几个函数
+
+`newPrivKey`
 ```
 /* generate a new random private key */
 	coinjs.newPrivkey = function(){
@@ -148,18 +150,21 @@ console.log(typeof priv_key)
 ```
 
 输出
-`string`
 `19bcd3173cb7480356ba16d47c6d6e2ce04c9ea9d358ba39b58a4bbce8b92a44`
+`string`
 
 一共 64 位十六进制字符
 
 也就是说上面这个函数是用于随机生成 64 位十六进制字符
 
-更为科学的解释:
+更为科学的解释 ([参考链接](http://pangjiuzala.github.io/2016/03/03/Bitcoin%E5%8A%A0%E5%AF%86%E6%8A%80%E6%9C%AF%E4%B9%8B%E6%A4%AD%E5%9C%86%E6%9B%B2%E7%BA%BF%E5%AF%86%E7%A0%81%E5%AD%A6/)):
 > ⽣成密钥的第⼀步也是最重要的⼀步， 是要找到⾜够安全的熵源， 即随机性来源。 ⽣成⼀个⽐特币私钥在本质上与 “在 1 到 2^256 之间选⼀个数字” ⽆异。 只要选取的结果是不可预测或不可重复的， 那么选取数字的具体⽅法并不重要。 ⽐特币软件使⽤操作系统底层的随机数⽣成器来产⽣ 256 位的熵（ 随机性） 。 通常情况下， 操作系统随机数⽣成器由⼈⼯的随机源进⾏初始化， 也可能需要通过⼏秒钟内不停晃动⿏标等⽅式进⾏初始化。 对于真正的偏执狂， 可以使⽤掷骰⼦的⽅法， 并⽤铅笔和纸记录。
 
-[参考链接](http://pangjiuzala.github.io/2016/03/03/Bitcoin%E5%8A%A0%E5%AF%86%E6%8A%80%E6%9C%AF%E4%B9%8B%E6%A4%AD%E5%9C%86%E6%9B%B2%E7%BA%BF%E5%AF%86%E7%A0%81%E5%AD%A6/)
-http://pangjiuzala.github.io/2016/03/03/Bitcoin%E5%8A%A0%E5%AF%86%E6%8A%80%E6%9C%AF%E4%B9%8B%E6%A4%AD%E5%9C%86%E6%9B%B2%E7%BA%BF%E5%AF%86%E7%A0%81%E5%AD%A6/
+>  私钥可以是 1 和 n-1 之间的任何数字， 其中 n 是⼀个常数（n=1.158*1077， 略⼩于 2^256） ， 并由⽐特币所使⽤的椭圆曲线的阶所定义。要⽣成这样的⼀个私钥， 我们随机选择⼀个 256 位的数字， 并检查它是否⼩于 n-1。 从编程的⻆度来看， ⼀般是通过在⼀个密码学安全的随机源中取出⼀⻓串随机字节， 对其使⽤ SHA256 哈希算法进⾏运算， 这样就可以⽅便地产⽣⼀个 256 位的数字。 如果运算结果⼩于 n-1， 我们就有了⼀个合适的私钥。 否则， 我们就⽤另⼀个随机数再重复⼀次。
+
+<hr/>
+
+`newPubkey`
 
 ```
 /* generate a public key from a private key */
@@ -220,7 +225,9 @@ http://pangjiuzala.github.io/2016/03/03/Bitcoin%E5%8A%A0%E5%AF%86%E6%8A%80%E6%9C
 > h = 01
 
 该函数作用:
-1 - Take the corresponding public key generated with it (65 bytes, 1 byte 0x04, 32 bytes corresponding to X coordinate, 32 bytes corresponding to Y coordinate)
+Take the corresponding public key generated with it (65 bytes, 1 byte 0x04, 32 bytes corresponding to X coordinate, 32 bytes corresponding to Y coordinate)
+
+`pubkey2address`
 
 ```
 /* provide a public key and return address */
@@ -233,10 +240,13 @@ http://pangjiuzala.github.io/2016/03/03/Bitcoin%E5%8A%A0%E5%AF%86%E6%8A%80%E6%9C
 	}
 ```
 该函数作用:
-2 - Perform SHA-256 hashing on the public key
-3 - Perform RIPEMD-160 hashing on the result of SHA-256
-4 - Add version byte in front of RIPEMD-160 hash (0x00 for Main Network)
+1. Perform SHA-256 hashing on the public key
+2. Perform RIPEMD-160 hashing on the result of SHA-256
+3. Add version byte in front of RIPEMD-160 hash (0x00 for Main Network)
 (note that below steps are the Base58Check encoding, which has multiple library options available implementing it)
+
+`privkey2wif`
+
 ```
 /* provide a privkey and return an WIF  */
 	coinjs.privkey2wif = function(h){
@@ -255,6 +265,39 @@ Note: The WIF (Wallet Import Format) includes information about the network and 
 
 
 ## 功能 2: 多方签名
+
+查找多方签名核心代码步骤同上,
+
+代码如下
+
+
+```
+coinjs.pubkeys2MultisigAddress = function(pubkeys, required) {
+  var s = coinjs.script();
+  s.writeOp(81 + (required*1) - 1); //OP_1
+  for (var i = 0; i < pubkeys.length; ++i) {
+    s.writeBytes(Crypto.util.hexToBytes(pubkeys[i]));
+  }
+  s.writeOp(81 + pubkeys.length - 1); //OP_1
+  s.writeOp(174); //OP_CHECKMULTISIG
+  var x = ripemd160(Crypto.SHA256(s.buffer, {asBytes: true}), {asBytes: true});
+  x.unshift(coinjs.multisig);
+  var r = x;
+  r = Crypto.SHA256(Crypto.SHA256(r, {asBytes: true}), {asBytes: true});
+  var checksum = r.slice(0,4);
+  var redeemScript = Crypto.util.bytesToHex(s.buffer);
+  var address = coinjs.base58encode(x.concat(checksum));
+
+  if(s.buffer.length> 520){ // too large
+    address = 'invalid';
+    redeemScript = 'invalid';
+  }
+
+  return {'address':address, 'redeemScript':redeemScript, 'size': s.buffer.length};
+}
+```
+
+辅助加密函数算法如下:
 
 ```
 (typeof Crypto=="undefined"||!Crypto.util)&&function(){
