@@ -193,7 +193,7 @@ http://cdmd.cnki.com.cn/Article/CDMD-10060-1015367328.htm
 缺点:
 Unfortunately, unlike ECDSA, the Schnorr algorithm has not been standardized since its invention, likely because of the original patent enforced on it (which has since expired). While the general outlines of the system are mathematically sound, the lack of documentation and specification makes it more challenging to implement. Specifically, its application to the ephemeral keypairs design of Bitcoin involves security considerations that require further optimization.
 
-有关Schnorr链接:
+有关 Schnorr 链接:
 https://bitcoincore.org/en/2017/03/23/schnorr-signature-aggregation/
 
 https://medium.com/@SDWouters/why-schnorr-signatures-will-help-solve-2-of-bitcoins-biggest-problems-today-9b7718e7861c
