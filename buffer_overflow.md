@@ -119,6 +119,14 @@ void main()
 
 不同架构的 CPU，寄存器名称被添以不同前缀以指示寄存器的大小。例如对于 x86 架构，字母 “e” 用作名称前缀，指示各寄存器大小为 32 位；对于 x86_64 寄存器，字母 “r” 用作名称前缀，指示各寄存器大小为 64 位。
 
+参考链接: https://www.cnblogs.com/bangerlee/archive/2012/05/22/2508772.html
+
+## 缓冲区溢出攻击
+
+### 原理
+
+https://www.cnblogs.com/fanzhidongyzby/archive/2013/08/10/3250405.html
+
 考虑以下程序:
 ```
 void function(int a, int b)
