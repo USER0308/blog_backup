@@ -7,8 +7,10 @@
 `https://s.XXXX.edu.cn/a70.htm?wlanuserip=192.168.165.193&wlanacip=192.168.255.251&wlanacname=WX6108E-slot5-AC&redirect=&session=&vlanid=XXXX-student&ip=192.168.165.193&mac=000000000000`
 (上述 URL 已省去敏感信息)
 F12(chrome) 打开开发者工具, 刷新页面, 抓到数据包, 主要包括一个 a70.htm 页面和一个功能函数 js 脚本, 还包括一些美化的 js,css, 在登录界面提交按钮出右键, 检查元素, 定位到按钮的 html 源代码,
-``
-只有 class 和 id, 得到 button 的 id 为
+```
+<button type="submit" class="btn" id="login"> 登录 / Login</button>
+```
+只有 class 和 id, 得到 button 的 id 为 login
 在抓包列表中打开功能函数 js 脚本, 将其全选, 复制粘贴到本地, 大概地浏览了一下, 主要分为几部分, 开头定义了一些全局变量, 主要用到的且比较重要的全局变量有
 ```
 var accountSuffix="";// 账号后缀
@@ -106,13 +108,40 @@ function ee(form_id){
 ```
 对这段代码进行提取, 主要是, 获得 f1 表单中的内容, 然后填写到隐藏表单 f0 中, 当然, 中间可能有加密步骤, 但由于全局变量 enMd5 = 0, 所以并没有调用到加密函数, 现在回到 html 页面中查看 f1 和 f0, 代码如下:
 ```
+<form name="f0" method="post" action="">
+<input type="hidden" name="DDDDD" value="">
+<input type="hidden" name="upass" value="">
+<input type="hidden" name="R1" value="0">
+<input type="hidden" name="R2" value="0">
+<input type="hidden" name="R6" value="0">
+<input type="hidden" name="para" value="00">
+<input type="hidden" name="0MKKey" value="123456">
+</form>
 ```
-可以看到 f1 嵌套在 f0 中, f0 表单主体有
+```
+<form name="f1" method="post" action=""onsubmit="return ee(1)">
+    <div class="form-item"> 用户名 (Username): </div>
+     <div class="form-item"> <input class="form-text" id="VipDefaultAccount" name="DDDDD" type="text" value=""placeholder=" 请输入用户名 ">
+    </div>
+    <div class="form-item"> 密码 (Password)：</div>
+      <div class="form-item"> <input class="form-text" id="VipDefaultPassword" name="upass" type="password" value=""placeholder=" 请输入密码 ">
+    </div>   
+    <div class="form-item">
+      <button type="submit" class="btn" id="login"> 登录 / Login</button>
+    </div>
+	 <div class="text2">
+	   <label class="text2">
+	   <input type="checkbox" name="checkbox" value="checkbox"> 已阅读服务声明 (Service statement has been read)
+	   </label>
+     </div>		
+     </form>
+```
+可以看到 f0 表单主体有
 ```
 'DDDDD':$ACCOUNT,
 'upass':$PASSWORD,
 'R1':'0',
-'R2':'',
+'R2':'0',
 'R6':'0',
 'para':'00',
 '0MKKey':'123456'
