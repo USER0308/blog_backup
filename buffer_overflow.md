@@ -214,3 +214,46 @@ buffer[0~3]
 * 溢出会依次覆盖 ebp 和返回地址
 
 一旦更改了返回地址, 指向特定的值, 那么缓冲区溢出攻击就算达成了
+
+实战:
+样例代码:
+```
+void function(int a)
+{
+  printf("a address is: %p\n",&a);
+	char buffer[4];
+	printf("buffer address is:%p\n",buffer);
+}
+
+void attack()
+{
+	printf("attack success!!\n");
+}
+
+void main()
+{
+	printf("attack function address is: %p\n",attack);
+	function(1);
+}
+```
+
+```
+main 函数返回地址, return address
+---------------
+上一个 ebp
+---------------
+a
+---------------
+function 的返回地址
+---------------
+main 函数的 ebp
+---------------
+buffer[0~3]
+---------------
+```
+输出
+```
+attack function address is: 0x400633
+a address is:0x7ffe5d72b11c
+buffer address is:0x7ffe5d72b120
+```
