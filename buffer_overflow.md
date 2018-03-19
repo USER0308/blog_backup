@@ -119,7 +119,7 @@ void main()
 
 不同架构的 CPU，寄存器名称被添以不同前缀以指示寄存器的大小。例如对于 x86 架构，字母 “e” 用作名称前缀，指示各寄存器大小为 32 位；对于 x86_64 寄存器，字母 “r” 用作名称前缀，指示各寄存器大小为 64 位。
 
-参考链接: https://www.cnblogs.com/bangerlee/archive/2012/05/22/2508772.html
+引用自: https://www.cnblogs.com/bangerlee/archive/2012/05/22/2508772.html
 
 ## 缓冲区溢出攻击
 
@@ -317,3 +317,20 @@ GCC 编译器有一种栈保护机制来阻止缓冲区溢出, 所以我们在�
 在 [这里](https://baike.baidu.com/item/ASCII/309296?fr=aladdin) 可以查到十六进制的 40 是 @字符
 再次编译, 运行, 成功
 ![success](http://ovt2bylq8.bkt.clouddn.com/12585db8e5f6fa9c4abbc3b8a04b6c5d.png)
+
+参考链接:
+buffer_over_flow:
+[Linux 及安全实验一：缓冲区溢出漏洞实验](https://www.cnblogs.com/zkzkzkzkzk/p/4450398.html)
+[Linux 下缓冲区溢出攻击的原理及对策](https://www.ibm.com/developerworks/cn/linux/l-overflow/index.html)
+[课件](https://padlet.com/chunhuachen/sec)
+
+gdb:
+[很经典的 GDB 调试命令，包括查看变量，查看内存](https://www.cnblogs.com/rosesmall/archive/2012/04/12/2444431.html)
+[Linux 学习 --gdb 调试](https://www.cnblogs.com/hankers/archive/2012/12/07/2806836.html)
+[Linux 中用 gdb 查看代码堆栈的信息](https://www.cnblogs.com/chengliangsheng/p/3597010.html)
+
+ASCII:
+[ASCII](https://baike.baidu.com/item/ASCII/309296?fr=aladdin)
+
+others:
+[Ubuntu 下缓冲区溢出实验注意事项](http://www.aichengxu.com/linux/2502183.htm)
