@@ -320,12 +320,13 @@ GCC 编译器有一种栈保护机制来阻止缓冲区溢出, 所以我们在�
 
 所以 b 的内容是 24 个 A 再加上实际跳转地址, 这里我们想要的跳转地址是 attack 函数,
 
-先查看 attack 函数的开始地址
-`info line attack`
-输出
-`Line 11 of "example1.c" starts at address 0x400604 <attack> and ends at 0x400608 <attack+4>.
+先查看 attack 函数的开始地址 `info line attack`
+
+输出 `Line 11 of "example1.c" starts at address 0x400604 <attack> and ends at 0x400608 <attack+4>.
 `
+
 获得首地址为 0x400604, 上面说过, buffer 填充字节是从右到左, 所以 b 的内容为 `AAAAAAAAAAAAAAAAAAAAAAAA\4\6@`
+
 在 [这里](https://baike.baidu.com/item/ASCII/309296?fr=aladdin) 可以查到十六进制的 40 是 @字符
 
 再次编译, 运行, 成功
