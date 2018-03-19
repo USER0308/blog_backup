@@ -105,7 +105,9 @@ $("#newBitcoinAddress").val(coin.address);
 $("#newPubKey").val(coin.pubkey);
 $("#newPrivKey").val(coin.wif);
 ```
+
 ![encrypt text](http://ovt2bylq8.bkt.clouddn.com/8e5d0014215daa0f23c023dbccd7fa27.png)
+
 值得注意的是, 还有一个隐藏文本框, id 为 encryptKey, 只有在勾选上 `Encrypt Private Key with AES-256 Password` 的时候才会显示出来, 并且需要填写加密用的密码, 文本框的内容是使用密码加密之后的 WIF 地址.
 现在来研究 newPrivKey,newPubKey,pubkey2address,privkey2wif 这几个函数
 
