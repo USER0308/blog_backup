@@ -91,3 +91,5 @@ scriptPubKey
   redeemScriptHash
   OP_EQUAL
 locktime
+
+首先去挖矿,得到第一笔utxo,然后用这笔utxo
