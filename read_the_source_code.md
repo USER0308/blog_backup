@@ -508,8 +508,10 @@ for(s=0;s<d.length;s+=16){
     return a};
     d._blocksize=16;d._digestsize=32})();
 ```
-附录:
+## 附录:
+
 参考链接:
+
 https://arstechnica.com/tech-policy/2017/12/how-bitcoin-works/
 
 https://zhuanlan.zhihu.com/p/30949559
