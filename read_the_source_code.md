@@ -272,7 +272,6 @@ Note: The WIF (Wallet Import Format) includes information about the network and 
 
 代码如下
 
-
 ```
 coinjs.pubkeys2MultisigAddress = function(pubkeys, required) {
   var s = coinjs.script();
@@ -298,6 +297,30 @@ coinjs.pubkeys2MultisigAddress = function(pubkeys, required) {
   return {'address':address, 'redeemScript':redeemScript, 'size': s.buffer.length};
 }
 ```
+多方签名函数生成两个地址, P2SH 地址和 REDEEM SCRIPT, 前者用于收款, 后者用于提款
+一个有效的 REDEEM SCRIPT 地址, 格式为:<OP_2><A pubkey><B pubkey><C pubkey><OP_3><OP_CHECKMULTISIG>
+前一个 OP_2 代表需要两个私钥才能使用该多方签名地址的资金, OP_3 代表创建这个多方签名地址一共需要有三个公钥
+`81 + (required*1) - 1` 这句中, 如果 required = 1, 那么就是运算结果是 81, 也就是 < OP_1>, 这是由 Script 语言规定的, 之前都说比特币中有非图灵完备的脚本语言, 即是指 Script 语言, https://en.bitcoin.it/wiki/Script 维基百科中有 Script 的介绍.<OP_1> 表示需要一个人签名就可以用多方签名钱包里的钱, 如果 required = 2, 运算结果是 82, 也就是 < OP_2>, 同理. 由于 Script 语言中只定义了 < OP_1 > 到 < OP_16>, 所以最多只能 15 个人创建一个钱包
+
+计算 redeemScript 地址:
+在数组中放入 81 + (required*1) - 1
+再放入参与方的 pubKeys
+再放入 81 + pubkeys.length - 1
+再放入 <OP_CHECKMULTISIG>
+<OP_2><pubKey A><pubKey B><pubKey C><OP_3><OP_CHECKMULTISIG>
+
+计算 address(钱包地址):
+进行 ripemd160(SHA256(redeemScript 地址)) 运算
+添加表示多方签名的前缀 0x05 得到钱包地址 addressTmp
+计算 checksum:
+对钱包地址 addressTmp 进行两次 SHA256 运算
+取前四位作为 checksum
+将钱包地址 addressTmp 加上 checksum 并进行 Base58 编码作为最终钱包地址
+存在疑问: 要不要连接上摘要? coinbin 中要, 但文章中 (http://www.soroushjp.com/2014/12/20/bitcoin-multisig-the-hard-way-understanding-raw-multisignature-bitcoin-transactions/, 和 https://zhuanlan.zhihu.com/p/30949559) 不要
+
+## 功能 3: 从个人钱包转账到多方签名钱包:
+
+
 
 辅助加密函数算法如下:
 
