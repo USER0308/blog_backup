@@ -1,6 +1,3 @@
-私钥加密, 公钥验证?
-签名算法
-
 Script is a language
 
 Thus 0x81 represents -1. 0x80 is another representation of zero (so called negative 0). Positive 0 is represented by a null-length vector. Byte vectors are interpreted as Booleans where False is represented by any representation of zero and True is represented by any representation of non-zero.
