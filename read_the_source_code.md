@@ -393,7 +393,8 @@ def makeSignedTransaction(privateKey, outputTransactionHash, sourceIndex, script
 
 ## 功能 4: 从多方签名钱包转账到个人钱包
 输入: input_tx,amount,destination,privateKey[], redeemScript
-
+输出:
+raw transaction
 ![](http://ovt2bylq8.bkt.clouddn.com/d3e50343f14405f2c40c4466899d7083.png)
 ![](http://ovt2bylq8.bkt.clouddn.com/1e5d4c7aa3c0ee92cdb2bb9e97d0af75.png)
 ![](http://ovt2bylq8.bkt.clouddn.com/92d9ae9cee4096d0fef356ce1af3b0f6.png)
