@@ -508,3 +508,22 @@ for(s=0;s<d.length;s+=16){
     return a};
     d._blocksize=16;d._digestsize=32})();
 ```
+附录:
+参考链接:
+https://arstechnica.com/tech-policy/2017/12/how-bitcoin-works/
+
+https://zhuanlan.zhihu.com/p/30949559
+
+http://www.righto.com/2014/02/bitcoin-mining-hard-way-algorithms.html
+
+https://en.bitcoin.it/wiki/Script
+
+https://bitcoin.stackexchange.com/questions/3374/how-to-redeem-a-basic-tx
+
+http://www.righto.com/2014/02/bitcoins-hard-way-using-raw-bitcoin.html
+
+http://www.soroushjp.com/2014/11/21/helpful-bash-scripts-for-working-with-byte-arrays-and-hex-in-bitcoin/
+
+https://bitcoin.org/en/developer-guide#verifying-payment
+
+http://www.soroushjp.com/2014/12/20/bitcoin-multisig-the-hard-way-understanding-raw-multisignature-bitcoin-transactions/
