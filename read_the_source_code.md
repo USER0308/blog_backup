@@ -298,29 +298,65 @@ coinjs.pubkeys2MultisigAddress = function(pubkeys, required) {
 }
 ```
 多方签名函数生成两个地址, P2SH 地址和 REDEEM SCRIPT, 前者用于收款, 后者用于提款
-一个有效的 REDEEM SCRIPT 地址, 格式为:<OP_2><A pubkey><B pubkey><C pubkey><OP_3><OP_CHECKMULTISIG>
-前一个 OP_2 代表需要两个私钥才能使用该多方签名地址的资金, OP_3 代表创建这个多方签名地址一共需要有三个公钥
+一个有效的 REDEEM SCRIPT 地址, 格式为:<OP_2>< A pubkey>< B pubkey>< C pubkey><OP_3><OP_CHECKMULTISIG>
+前一个 <OP_2> 代表需要两个私钥才能使用该多方签名地址的资金, <OP_3> 代表创建这个多方签名地址一共需要有三个公钥
 `81 + (required*1) - 1` 这句中, 如果 required = 1, 那么就是运算结果是 81, 也就是 < OP_1>, 这是由 Script 语言规定的, 之前都说比特币中有非图灵完备的脚本语言, 即是指 Script 语言, https://en.bitcoin.it/wiki/Script 维基百科中有 Script 的介绍.<OP_1> 表示需要一个人签名就可以用多方签名钱包里的钱, 如果 required = 2, 运算结果是 82, 也就是 < OP_2>, 同理. 由于 Script 语言中只定义了 < OP_1 > 到 < OP_16>, 所以最多只能 15 个人创建一个钱包
 
-计算 redeemScript 地址:
+### 计算 redeemScript 地址:
 在数组中放入 81 + (required*1) - 1
 再放入参与方的 pubKeys
 再放入 81 + pubkeys.length - 1
 再放入 <OP_CHECKMULTISIG>
-<OP_2><pubKey A><pubKey B><pubKey C><OP_3><OP_CHECKMULTISIG>
+结果得到:<OP_2>< pubKey A>< pubKey B>< pubKey C><OP_3><OP_CHECKMULTISIG>
 
-计算 address(钱包地址):
+#### 计算 address(钱包地址):
 进行 ripemd160(SHA256(redeemScript 地址)) 运算
 添加表示多方签名的前缀 0x05 得到钱包地址 addressTmp
 计算 checksum:
 对钱包地址 addressTmp 进行两次 SHA256 运算
 取前四位作为 checksum
 将钱包地址 addressTmp 加上 checksum 并进行 Base58 编码作为最终钱包地址
-存在疑问: 要不要连接上摘要? coinbin 中要, 但文章中 (http://www.soroushjp.com/2014/12/20/bitcoin-multisig-the-hard-way-understanding-raw-multisignature-bitcoin-transactions/, 和 https://zhuanlan.zhihu.com/p/30949559) 不要
+存在疑问: 要不要连接上摘要再 Base58 编码? coinbin 中要, 但文章中 (http://www.soroushjp.com/2014/12/20/bitcoin-multisig-the-hard-way-understanding-raw-multisignature-bitcoin-transactions/, 和 https://zhuanlan.zhihu.com/p/30949559) 不要
 
-## 功能 3: 从个人钱包转账到多方签名钱包:
+## 功能 3: 从个人钱包转账到多方签名钱包
+
+输入: input_transaction_id,privateKey,destination,amount
+输出 raw transaction
+首先说一下背景知识
+> 三、交易过程
+> 下面，我把整个流程串起来，看看比特币如何完成一笔交易。
+> 一笔交易就是一个地址的比特币，转移到另一个地址。由于比特币的交易记录全部都是公开的，哪个地址拥有多少比特币，都是可以查到的。因此，支付方是否拥有足够的比特币，完成这笔交易，这是可以轻易验证的。
+> 问题出在怎么防止其他人，冒用你的名义申报交易。举例来说，有人申报了一笔交易：地址 A 向地址 B 支付 10 个比特币。我怎么知道这个申报是真的，申报人就是地址 A 的主人？
+> 比特币协议规定，申报交易的时候，除了交易金额，转出比特币的一方还必须提供以下数据。
+> 上一笔交易的 Hash（你从哪里得到这些比特币）
+> 本次交易双方的地址
+> 支付方的公钥
+> 支付方的私钥生成的数字签名
+> 验证这笔交易是否属实，需要三步。
+> 第一步，找到上一笔交易，确认支付方的比特币来源。
+> 第二步，算出支付方公钥的指纹，确认与支付方的地址一致，从而保证公钥属实。
+> 第三步，使用公钥去解开数字签名，保证私钥属实。
+> 经过上面三步，就可以认定这笔交易是真实的。
+> 引用自: http://www.ruanyifeng.com/blog/2018/01/bitcoin-tutorial.html
 
 
+raw transaction
+01000000013dcd7d87904c9cb7f4b79f36b5a03f96e2e729284c09856238d5353e1182b00200000000fd5d01004730440220762ce7bca626942975bfd5b130ed3470b9f538eb2ac120c2043b445709369628022051d73c80328b543f744aa64b7e9ebefa7ade3e5c716eab4a09b408d2c307ccd701483045022100abf740b58d79cab000f8b0d328c2fff7eb88933971d1b63f8b99e89ca3f2dae602203354770db3cc2623349c87dea7a50cee1f78753141a5052b2d58aeb592bcf50f014cc9524104a882d414e478039cd5b52a92ffb13dd5e6bd4515497439dffd691a0f12af9575fa349b5694ed3155b136f09e63975a1700c9f4d4df849323dac06cf3bd6458cd41046ce31db9bdd543e72fe3039a1f1c047dab87037c36a669ff90e28da1848f640de68c2fe913d363a51154a0c62d7adea1b822d05035077418267b1a1379790187410411ffd36c70776538d079fbae117dc38effafb33304af83ce4894589747aee1ef992f63280567f52f5ba870678b4ab4ff6c8ea600bd217870a8b4f1f09f3a8e8353aeffffffff0130d90000000000001976a914569076ba39fc4ff6a2291d9ea9196d8c08f9c7ab88ac00000000  
+
+如何生成 raw transaction
+
+![](http://ovt2bylq8.bkt.clouddn.com/58d9c6515ec7f2579aa7c291b2ffafee.png)
+![](http://ovt2bylq8.bkt.clouddn.com/2e863cb2662f16c57e8d926bae0836a6.png)
+
+<OP_HASH160> < redeemScriptHash> <OP_EQUAL>
+
+然后将 raw transaction 广播到网络中, 被矿工收集打包成 block, 经过确认, 写入区块链中
+
+## 功能 4: 从多方签名钱包转账到个人钱包
+
+![](http://ovt2bylq8.bkt.clouddn.com/d3e50343f14405f2c40c4466899d7083.png)
+![](http://ovt2bylq8.bkt.clouddn.com/1e5d4c7aa3c0ee92cdb2bb9e97d0af75.png)
+![](http://ovt2bylq8.bkt.clouddn.com/92d9ae9cee4096d0fef356ce1af3b0f6.png)
 
 辅助加密函数算法如下:
 
