@@ -5,7 +5,7 @@ Leading zeros in an integer and negative zero are allowed in blocks but get reje
 
 
 多方签名会生成两个地址: P2SH 地址和 REDEEM SCRIPT, 前者用于收款, 后者用于提款
-一个有效的 REDEEM SCRIPT 地址, 格式为:<OP_2><A pubkey><B pubkey><C pubkey><OP_3><OP_CHECKMULTISIG>
+一个有效的 REDEEM SCRIPT 地址, 格式为:<OP_2><A pubkey>< B pubkey><C pubkey><OP_3><OP_CHECKMULTISIG>
 前一个 OP_2 代表需要两个私钥才能使用该多方签名地址的资金, OP_3 代表创建这个多方签名地址一共需要有三个公钥
 参考 https://en.bitcoin.it/wiki/Script
 <OP_1> 的十进制是 81, 十六进制是 51
