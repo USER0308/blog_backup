@@ -529,3 +529,98 @@ http://www.soroushjp.com/2014/11/21/helpful-bash-scripts-for-working-with-byte-a
 https://bitcoin.org/en/developer-guide#verifying-payment
 
 http://www.soroushjp.com/2014/12/20/bitcoin-multisig-the-hard-way-understanding-raw-multisignature-bitcoin-transactions/
+
+## 测试:
+先生成三个地址:
+address:
+1CZz3Xtq2H4qHFjMzvrXXgtFrz2L1mwLou
+pubKey:
+03fb8ebbd4ad9e8e5b8194e2e85c4c11f2105837b3c9d4f1c13ab20d41f8809554
+privKey WIF:
+L2BgBMGo3KFXMzShBj3gSGoT8o7Nhs5dVQqY6iWFJ9NrQEzwH1r1
+
+address:
+1A1Q2Y2TAFNXpcMXLwWpqSax4JpT4iuNY9
+pubKey:
+03f45a6244114e32c7139a74ba14777214b321edbe563f77ca8c413f748d79b8c2
+privKey wIF:
+L4CtJR61u7oFuNwsVobmNcQdDoYoWqqw9HfVbyqKc5KRECZUPikC
+
+address:
+1M4wVzYuKwcQ3xiCkWvYSjefL5sxvt91Hm
+pubKey:
+026c7c9262452b8d5a350844ea6d0d08e9c581ee55356d280e7e7930845efd8302
+privKey WIF:
+KwEQST2n8g47ZKyWwgQZY5cLRPWJimFHxvz7skhxAxD2R3mMyEQH
+
+2 of 3
+address:
+3FEuy5DpfQJU2qHM5zT95ig66iSigKTadk
+redeemScript:
+522103fb8ebbd4ad9e8e5b8194e2e85c4c11f2105837b3c9d4f1c13ab20d41f88095542103f45a6244114e32c7139a74ba14777214b321edbe563f77ca8c413f748d79b8c221026c7c9262452b8d5a350844ea6d0d08e9c581ee55356d280e7e7930845efd830253ae
+如果每次输入的公钥不变, 公钥输入顺序不变, 那么结果生成的地址和 redeemScript 也不变.
+下面查看 redeemScript:
+52 代表 <OP_2>
+21 代表 The next opcode bytes is data to be pushed onto the stack
+03fb8ebbd4ad9e8e5b8194e2e85c4c11f2105837b3c9d4f1c13ab20d41f8809554 代表第一个公钥
+21
+03f45a6244114e32c7139a74ba14777214b321edbe563f77ca8c413f748d79b8c2 代表第二个公钥
+21
+026c7c9262452b8d5a350844ea6d0d08e9c581ee55356d280e7e7930845efd8302 代表第三个公钥
+53 代表 <OP_3>
+ae 代表 <OP_CHECKMULTISIGCK>
+
+130 个
+04a882d414e478039cd5b52a92ffb13dd5e6bd4515497439dffd691a0f12af9575fa349b5694ed3155b136f09e63975a1700c9f4d4df849323dac06cf3bd6458cd
+
+66 个
+026c7c9262452b8d5a350844ea6d0d08e9c581ee55356d280e7e7930845efd8302
+为什么 [文章](http://www.soroushjp.com/2014/12/20/bitcoin-multisig-the-hard-way-understanding-raw-multisignature-bitcoin-transactions/) 中是 130 个而 coinbin 网站则是 66 个呢? 为什么不是以 04 开头呢? 查看源码, 得知是因为在 coinbin 的网站上默认勾选了 compress, 所以会将 130 个压缩成 66 个
+```
+if(coinjs.compressed==true){
+			var publicKeyBytesCompressed = EllipticCurve.integerToBytes(x,32)
+			if (y.isEven()){
+				publicKeyBytesCompressed.unshift(0x02)
+			} else {
+				publicKeyBytesCompressed.unshift(0x03)
+			}
+			return Crypto.util.bytesToHex(publicKeyBytesCompressed);
+		} else {
+			return Crypto.util.bytesToHex(publicKeyBytes);
+		}
+```
+取消掉压缩重新生成的, 又是 130 位.
+0470916f0ec91cdbfef7f26e05bc3eef7c94a7268bcac4b868fd6815efbde32d6d5c91064999086dff56343c7c49898c1a635481677059bda3e3fa3696ca69df21
+
+重新来过:
+address:
+1BgzrXYXmTpEJikGBvdKAX6HzJudCy9m4E
+pubKey:
+049ef619e2ce931cec27c5bbc5541a42115cd2b13884129641595570181c2904473f3c79c916bbcb1b0ba017175be37220ed511ca64945a4fbcb411057a4133dd9
+privKey WIF:
+5JTC6REoGqPm5KGW7LRBVshJ9z2Ett79vQfvwdhLdsqk2QQ1BUq
+
+address:
+17oHxZPA3JU8A15wZsh8qLAvm7mPx4Sfci
+pubKey:
+04e363b88f7b6493ee073c189fe9912242707fcbcf56e25385a6bc207694cd925fb0f03cccf28b5ee7342aacb1f65e9eb9d472c8bb1ff73f542bbbed798648968c
+privKey WIF:
+5HyvHLJ8hvMMnsE8HDNCKu99hmd5p3UKtSvQfKrRcZc5X4bB9d4
+
+address:
+1AZXX6qk3TGEBgzwVKNXHdNPG5fyoXAkTS
+pubKey:
+04d0e6cf82b9146b03285833b8ff5137e52adc92c87dde5f2ede80cfee83ddd9d9bf67566a3cb84b23cb9ef89b750de2e0316f7de72aebf4b16d2f85a62cf58900
+privKey WIF:
+5KiukcG3VwXKN4vzbyBaNDCrhfA3L8ytfWSdRndzdyw16mZhgAb
+
+2 of 3
+address:
+37LYRCZ2kSe3GLxiDGcEw2vWA2vGRp7ujz
+redeemScript:
+5241049ef619e2ce931cec27c5bbc5541a42115cd2b13884129641595570181c2904473f3c79c916bbcb1b0ba017175be37220ed511ca64945a4fbcb411057a4133dd94104e363b88f7b6493ee073c189fe9912242707fcbcf56e25385a6bc207694cd925fb0f03cccf28b5ee7342aacb1f65e9eb9d472c8bb1ff73f542bbbed798648968c4104d0e6cf82b9146b03285833b8ff5137e52adc92c87dde5f2ede80cfee83ddd9d9bf67566a3cb84b23cb9ef89b750de2e0316f7de72aebf4b16d2f85a62cf5890053ae
+
+这些都是十六进制
+52 代表 <OP_2>
+41 转化为十进制 65, 代表把接下来的 65byte 放入栈, 刚好一个公钥长度为 130, 每两个公钥字符对应一个 byte
+剩下的都和之前一样,就不重复了.
