@@ -687,6 +687,9 @@ Also, we only have the Bitcoin Address of the person we intend to send the Bitco
 
 We don't need to. We can tell the network the 160 bit hash, and the person you're sending to can show the public key to the network when they want to spend their bitcoins.
 
+The script contains two components, a signature and a public key. The public key must match the hash given in the script of the redeemed output. The public key is used to verify the redeemers signature, which is the second component. More precisely, the second component is an ECDSA signature over a hash of a simplified version of the transaction. It, combined with the public key, proves the transaction was created by the real owner of the address in question. Various flags define how the transaction is simplified and can be used to create different types of payment.
+
+A Bitcoin address is only a hash, so the sender can't provide a full public key in scriptPubKey. When redeeming coins that have been sent to a Bitcoin address, the recipient provides both the signature and the public key. The script verifies that the provided public key does hash to the hash in scriptPubKey, and then it also checks the signature against the public key.	
 
 [see this](https://bitcoin.stackexchange.com/questions/8235/how-is-the-output-script-formed)
 
