@@ -623,4 +623,40 @@ redeemScript:
 这些都是十六进制
 52 代表 <OP_2>
 41 转化为十进制 65, 代表把接下来的 65byte 放入栈, 刚好一个公钥长度为 130, 每两个公钥字符对应一个 byte
-剩下的都和之前一样,就不重复了.
+剩下的都和之前一样, 就不重复了.
+
+redeemScript 转钱包地址 address 基本上是固定的了, 不会有问题
+
+
+转账部分:
+怎么从 inputTX 获取相关知识? 还是默认不管是否符合公钥, 未花费等条件了?
+raw transaction 是:
+0100000001acc6fb9ec2c3884d3a12a89e7078c83853d9b7912281cefb14bac00a2737d33a000000008a47304402204e63d034c6074f17e9c5f8766bc7b5468a0dce5b69578bd08554e8f21434c58e0220763c6966f47c39068c8dcd3f3dbd8e2a4ea13ac9e9c899ca1fbc00e2558cbb8b01410431393af9984375830971ab5d3094c6a7d02db3568b2b06212a7090094549701bbb9e84d9477451acc42638963635899ce91bacb451a1bb6da73ddfbcf596bddfffffffff01400001000000000017a9141a8b0026343166625c7475f01e48b5ede8c0252e8700000000  
+
+01000000 代表版本号,
+01 代表 Input count
+Previous tx hash (reversed)	acc6fb9ec2c3884d3a12a89e7078c83853d9b7912281cefb14bac00a2737d33a
+Output index	00000000
+scriptSig length of 138 bytes	8a
+276 位即 138*2, 两位作为一个 byte
+47304402204e63d034c6074f17e9c5f8766bc7b5468a0dce5b69578bd08554e8f21434c58e0220763c6966f47c39068c8dcd3f3dbd8e2a4ea13ac9e9c899ca1fbc00e2558cbb8b01410431393af9984375830971ab5d3094c6a7d02db3568b2b06212a7090094549701bbb9e84d9477451acc42638963635899ce91bacb451a1bb6da73ddfbcf596bddf
+签名部分:
+47 代表十进制的 71
+接下来是 142 位签名, 71bytes
+304402204e63d034c6074f17e9c5f8766bc7b5468a0dce5b69578bd08554e8f21434c58e0220763c6966f47c39068c8dcd3f3dbd8e2a4ea13ac9e9c899ca1fbc00e2558cbb8b01
+41 代表十进制的 65,
+再接着公钥, 但这是谁的公钥??
+Sequence	ffffffff
+No. of outputs	01
+Amount of 65600 in LittleEndian	4000010000000000
+scriptPubKey length of 23 bytes	17
+进入 scriptPubKey 部分:
+OP_HASH160	a9
+Push 20 bytes to stack	14
+redeemScriptHash	1a8b0026343166625c7475f01e48b5ede8c0252e
+OP_EQUAL	87
+这个 redeemScriptHash 又是谁的? 怎么产生的?
+locktime	00000000
+
+
+生成raw transaction的时候上面两个(公钥和redeemScriptHash)是不用填的,等到签名(sign)的时候才填写,之前说过,redeemScript是付款(即签名,签上自己的名字代表确认这笔交易,即付款)时用的,传入redeemScript,经过ripemd160(sha256())运算,得到的hash,别人可以根据公钥确认签名,从而确认这笔交易.
