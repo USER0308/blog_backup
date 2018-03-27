@@ -646,7 +646,7 @@ scriptSig length of 138 bytes	8a
 304402204e63d034c6074f17e9c5f8766bc7b5468a0dce5b69578bd08554e8f21434c58e0220763c6966f47c39068c8dcd3f3dbd8e2a4ea13ac9e9c899ca1fbc00e2558cbb8b01
 这个签名是怎么产生的?
 41 代表十进制的 65,
-再接着公钥, 但这是谁的公钥??(猜想: 这是个人转账到公有地址钱包, 所以公钥是该个人钱包的, 签名也是该个人使用私钥产生的, 因为转账时使用到了私钥, 所以最后的问题是: 怎么使用私钥进行签名)
+再接着公钥, 但这是谁的公钥??(猜想: 这是个人转账到公有地址钱包, 所以公钥是该个人钱包的, 签名也是该个人使用私钥产生的, 因为转账时使用到了私钥, 所以最后的问题是: 怎么使用私钥进行签名, 解答: 使用 ECDSA 签名)
 Sequence	ffffffff
 No. of outputs	01
 Amount of 65600 in LittleEndian	4000010000000000
@@ -661,7 +661,7 @@ locktime	00000000
 
 查找资料:
 scriptPubKey refers to Public Key of?
-Whoever you're sending the bitcoins to.
+Whoever you're sending the bitcoins to.(但不是只有对方的钱包地址 address 吗? 只有钱包地址是不可能推出公钥的, 这里是个人转账到个人, 所以 scriptPubKey 中也有 pubKey, 是接收转账者的个人公钥)
 
 Where does the Input Script come from?
 It is composed of two pieces - your public key, and a valid signature corresponding to that public key. So, you make it.
@@ -689,7 +689,7 @@ We don't need to. We can tell the network the 160 bit hash, and the person you'r
 
 The script contains two components, a signature and a public key. The public key must match the hash given in the script of the redeemed output. The public key is used to verify the redeemers signature, which is the second component. More precisely, the second component is an ECDSA signature over a hash of a simplified version of the transaction. It, combined with the public key, proves the transaction was created by the real owner of the address in question. Various flags define how the transaction is simplified and can be used to create different types of payment.
 
-A Bitcoin address is only a hash, so the sender can't provide a full public key in scriptPubKey. When redeeming coins that have been sent to a Bitcoin address, the recipient provides both the signature and the public key. The script verifies that the provided public key does hash to the hash in scriptPubKey, and then it also checks the signature against the public key.	
+A Bitcoin address is only a hash, so the sender can't provide a full public key in scriptPubKey. When redeeming coins that have been sent to a Bitcoin address, the recipient provides both the signature and the public key. The script verifies that the provided public key does hash to the hash in scriptPubKey, and then it also checks the signature against the public key.
 
 [see this](https://bitcoin.stackexchange.com/questions/8235/how-is-the-output-script-formed)
 
