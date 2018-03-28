@@ -693,8 +693,71 @@ A Bitcoin address is only a hash, so the sender can't provide a full public key 
 
 [see this](https://bitcoin.stackexchange.com/questions/8235/how-is-the-output-script-formed)
 
+Multisignature transactions
+Funds are sitting in one or more multisignature transaction outputs, and it is time to gather signatures and spend them.
+
+Assumption: you know the multisignature outputs' {txid, outputNumber, amount}.
+
+Create a raw transaction to spend, using createrawtransaction.
+Use signrawtransaction to add your signatures (after unlocking the wallet, if necessary).
+Give the transaction to the other person(s) to sign.
+You or they submit the transaction to the network using sendrawtransaction.
+You must be careful to include an appropriate transaction fee, or the sendrawtransaction method is likely to fail (either immediately or, worse, the transaction will never confirm).
 
 生成 raw transaction 的时候上面两个 (公钥和 redeemScriptHash) 是不用填的, 等到签名 (sign) 的时候才填写, 之前说过, redeemScript 是付款 (即签名, 签上自己的名字代表确认这笔交易, 即付款) 时用的, 传入 redeemScript, 经过 ripemd160(sha256()) 运算, 得到的 hash, 别人可以根据公钥确认签名, 从而确认这笔交易.
+
+A 想要向 B 发送一笔交易, A 填写上 raw transaction,
+```
+{
+	“txid” : “54f773a3fdf7cb3292fc76b46c97e536348b3a0715886dbfd2f60e115fb3a8f0″,
+	“version” : 1,
+	“locktime” : 0,
+	“vin” : [
+	{
+		"txid" : "296ea7bf981b44999d689853d17fe0ceb852a8a34e68fcd19f0a41e589132156",
+		"vout" : 0,
+		"scriptSig" : {
+			"asm" : "",
+			"hex" : ""
+			},
+			"sequence" : 4294967295
+		}
+	],
+	“vout” : [
+	{
+		"value" : 0.10000000,
+		"n" : 0,
+		"scriptPubKey" : {
+			"asm" : "OP_DUP OP_HASH160 fdc7990956642433ea75cabdcc0a9447c5d2b4ee OP_EQUALVERIFY OP_CHECKSIG",
+			"hex" : "76a914fdc7990956642433ea75cabdcc0a9447c5d2b4ee88ac",
+			"reqSigs" : 1,
+			"type" : "pubkeyhash",
+			"addresses" : [
+			"1Q8s4qDRbCbFypG5AFNR9tFC57PStkPX1x"
+			]
+		}
+	},
+	{
+		“value” : 0.09890000,
+		“n” : 1,
+		“scriptPubKey” : {
+			“asm” : “OP_DUP OP_HASH160 d6c492056f3f99692b56967a42b8ad44ce76b67a OP_EQUALVERIFY OP_CHECKSIG”,
+			“hex” : “76a914d6c492056f3f99692b56967a42b8ad44ce76b67a88ac”,
+			“reqSigs” : 1,
+			“type” : “pubkeyhash”,
+			“addresses” : [
+			"1Lab618UuWjLmVA1Q64tHZXcLoc4397ZX3"
+			]
+		}
+	}
+	]
+}
+```
+
+至此，一个 “空白交易” 就构造好了，尚未使用私钥对交易进行签名，字段 scriptSig 是留空的，无签名的交易是无效的。此时的 Tx ID 并不是最终的 Tx ID，填入签名后 Tx ID 会发生变化。
+
+
+形象地讲，一笔交易输出 TxOut 的脚本 scriptPubKey 主要由接收方公钥的 Hash 和指令 OP_EQUALVERIFY、OP_CHECKSIG 构成，如同给这笔转账里的比特币上了一把锁，能够解开这把锁钥匙的拥有者即 OP_HASH160 公钥的拥有者，只有用相对应的私钥才可以使用被锁住的比特币。为了打开这把锁，在下一笔交易中，拥有者需要创建一个脚本 scriptSig 提供自己的签名和公钥。节点在验证交易的时候，会首先验证该公钥的 Hash160 是否与上一笔交易输出中的 OP_HASH160 相同，即表明该公钥为接收方所拥有。为了确保是接收方本人的操作，节点接下来要验证所提供的签名是否与公钥相匹配。如果验证通过，则该交易为合法，否则便会被拒绝
 
 问题:
 比特币是基于 UTXO 模型的, 其实并没有严格意义上的账户密码, 只有钱包公私钥, 以太坊是基于账户模型的,
