@@ -759,6 +759,13 @@ A 想要向 B 发送一笔交易, A 填写上 raw transaction,
 
 形象地讲，一笔交易输出 TxOut 的脚本 scriptPubKey 主要由接收方公钥的 Hash 和指令 OP_EQUALVERIFY、OP_CHECKSIG 构成，如同给这笔转账里的比特币上了一把锁，能够解开这把锁钥匙的拥有者即 OP_HASH160 公钥的拥有者，只有用相对应的私钥才可以使用被锁住的比特币。为了打开这把锁，在下一笔交易中，拥有者需要创建一个脚本 scriptSig 提供自己的签名和公钥。节点在验证交易的时候，会首先验证该公钥的 Hash160 是否与上一笔交易输出中的 OP_HASH160 相同，即表明该公钥为接收方所拥有。为了确保是接收方本人的操作，节点接下来要验证所提供的签名是否与公钥相匹配。如果验证通过，则该交易为合法，否则便会被拒绝
 
+
+
+redeemScriptHash 产生:
+对 <OP_2>< PK1>< PK2>< PK3><OP_3><OP_CHECKMULTISIG> 进行 ripemd160(sha256()) 运算得到
+
+剩下的 scriptSig 里的 signature 是发送方的签名, pubkey 是发送方的 pubkey,signature 是怎么产生的呢?
+
 问题:
 比特币是基于 UTXO 模型的, 其实并没有严格意义上的账户密码, 只有钱包公私钥, 以太坊是基于账户模型的,
 所谓 UTXO 模型:
