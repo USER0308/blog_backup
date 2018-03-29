@@ -768,6 +768,7 @@ redeemScriptHash 产生:
 首先构造 raw transaction, 除了 scriptSign 和 scriptPubKey, 其他区域先填充进去, 然后填充 scriptPubKey, 只需要获得地址, base58 解码, 转化为十六进制, 去掉前后缀, (hash160 一下?)
 使用 ECDSA 椭圆曲线数字签名算法, 使用私钥对经过 hash 的信息 (transaction, 但有少许改动) 进行签名
 构造待签名的 transaction message
+先使用 the scriptPubKey of the previous Output that we are trying to spend 填充 scriptSig,
 此时的 raw transaction 除了 signature 没有, 其他的都有了
 我們先暫時的在 raw transaction 後面掛上 4 bytes 的 hash type code，一般的 transaction 來說都用 SIGHASH_ALL (0x00000001)，要記得因為也是用 little endian 表示所以是 01000000
 然後我們把整串 raw transaction 複製一份之後拿去做兩次 SHA256
