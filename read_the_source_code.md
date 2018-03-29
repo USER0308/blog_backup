@@ -766,6 +766,14 @@ redeemScriptHash 产生:
 
 剩下的 scriptSig 里的 signature 是发送方的签名, pubkey 是发送方的 pubkey,signature 是怎么产生的呢?
 
+我們先暫時的在 raw transaction 後面掛上 4 bytes 的 hash type code，一般的 transaction 來說都用 SIGHASH_ALL (0x00000001)，要記得因為也是用 little endian 表示所以是 01000000
+然後我們把整串 raw transaction 複製一份之後拿去做兩次 SHA256
+接著把兩次 SHA256 的結果連同我自己的 private key 一起送去 ECDSA 簽名，會得到一個 signature
+再來把 signature 後面再掛上 1 byte 的 hash code type，在這邊一樣是 01 的 SIGHASH_ALL
+最後把上一步的 signature 連同我自己的 public key 去取代這個 raw transaction 原本的 input unlocking script，記得也要符合 script language，所以 signature 和 public key 前面都需要加他們的長度
+
+回到我們的 signature，他其實也是由 G 去乘上一個 k 所產生的一個座標，只是這個 k 並不只是 private key 了，他是由 private key 和傳進來的 message (兩次 SHA256 的 raw transaction) 和一個 random number 所組成的，因此要簽名一個 transaction 還是一定要有 private key 才能產生。
+
 问题:
 比特币是基于 UTXO 模型的, 其实并没有严格意义上的账户密码, 只有钱包公私钥, 以太坊是基于账户模型的,
 所谓 UTXO 模型:
