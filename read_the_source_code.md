@@ -762,7 +762,7 @@ A 想要向 B 发送一笔交易, A 填写上 raw transaction,
 
 
 redeemScriptHash 产生:
-对 <OP_2>< PK1>< PK2>< PK3><OP_3><OP_CHECKMULTISIG> 进行 ripemd160(sha256()) 运算得到
+对 <OP_2>< PK1>< PK2>< PK3><OP_3><OP_CHECKMULTISIG> 进行 ripemd160(sha256()) 运算得到,<OP_2>< PK1>< PK2>< PK3><OP_3><OP_CHECKMULTISIG > 可以由地址进行 base58 解码, 再去掉前导 05 得到.(有无校验和?)
 
 剩下的 scriptSig 里的 signature 是发送方的签名, pubkey 是发送方的 pubkey,signature 是怎么产生的呢?
 
