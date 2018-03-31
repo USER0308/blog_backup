@@ -795,4 +795,27 @@ redeemScriptHash 产生:
        |<- 收入 z
        |-> 支出 w
 ```
-问题是:对方公司采用的是哪种?又或者模型对多方签名重不重要?
+问题是: 对方公司采用的是哪种? 又或者模型对多方签名重不重要?
+
+附录:
+http://www.righto.com/2014/02/bitcoins-hard-way-using-raw-bitcoin.html
+
+http://www.soroushjp.com/2014/12/20/bitcoin-multisig-the-hard-way-understanding-raw-multisignature-bitcoin-transactions/
+
+https://en.bitcoin.it/wiki/Script
+
+https://klmoney.wordpress.com/bitcoin-dissecting-transactions-part-2-building-a-transaction-by-hand/
+
+https://bitcoin.stackexchange.com/questions/36440/signing-a-raw-transaction-with-python-ecdsa-or-openssl?rq=1
+
+https://bitcoin.stackexchange.com/questions/32628/redeeming-a-raw-transaction-step-by-step-example-required/32695#32695
+
+https://bitcoin.stackexchange.com/questions/3374/how-to-redeem-a-basic-tx/5241#5241
+
+http://lenschulwitz.com/base58
+
+https://medium.com/@bun919tw/transaction-%E7%B0%BD%E7%AB%A0%E7%9A%84%E6%B5%81%E7%A8%8B-45b883e8082a
+
+https://en.bitcoin.it/wiki/Protocol_documentation#Transaction_Verification
+
+https://en.bitcoin.it/wiki/Transaction_malleability
