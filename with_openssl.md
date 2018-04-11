@@ -47,3 +47,8 @@ bbp_eint16:
 bbp_eint32:
 bbp_eint64: 判断宿主机是不是等于传入的参数 e(表示大端小端), 是则返回参数, 不是则调用 swap 交换
 bbp_reverse:
+
+
+目前完成功能:
+除了本来已完成的功能外
+多方签名钱包地址和redeemScript的构建
