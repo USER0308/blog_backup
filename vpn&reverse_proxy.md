@@ -1,33 +1,35 @@
 # 虚拟局域网与反向代理技术
 
-> 这是信息系统安全的一次实验课,因为觉得还挺有意思,就记录下来.
+> 这是信息系统安全的一次实验课, 因为觉得还挺有意思, 就记录下来.
 
 ## 虚拟局域网
 
-虚拟局域网即VPN,通常某些局域网为了安全,不与外界互联网连通,只在局域网内交流信息,比如某家公司的局域网.由于局域网使用的都是私有地址,外部网络无法访问,从而可以抵御大部分的外来攻击.可是,当员工出差的时候,往往需要用到局域网内的一些资料,所以需要使用VPN技术来实现从外网访问内网.
+虚拟局域网即 VPN, 通常某些局域网为了安全, 不与外界互联网连通, 只在局域网内交流信息, 比如某家公司的局域网. 由于局域网使用的都是私有地址, 外部网络无法访问, 从而可以抵御大部分的外来攻击. 可是, 当员工出差的时候, 往往需要用到局域网内的一些资料, 所以需要使用 VPN 技术来实现从外网访问内网.
 具体思路如下:
 
 ```
 |----------------|                                   |------------------|
 |    公司局域网    |                                   |     酒店局域网     |
 |                |                                   |                  |
-|  电脑A          |                                   |                  |
+|  电脑 A          |                                   |                  |
 |----------------|-----------------------------------|------------------|
-|  电脑B          |         |  具有公网IP的服务器  |     |    员工电脑       |
+|  电脑 B          |         |  具有公网 IP 的服务器  |     |    员工电脑       |
 |----------------|-----------------------------------|------------------|
 |  ...           |                                   |                  |
 ```
 
-其中公司局域网内的电脑B和具有公网IP的服务器和员工电脑组成一个局域网,由于这三者并不是使用物理线路连接组成的局域网,故称为虚拟局域网.员工想要访问公司局域网内的资料时,向具有公网IP的服务器发起一个请求,公网IP服务器将请求的内容转发给电脑B,电脑B访问公司局域网获得资料后返回给服务器,服务器再转发给员工电脑,看起来就像员工电脑直接访问公司局域网内部资料.
-由于这里有三个局域网,所以虚拟局域网中的电脑(包括服务器)都有两个IP地址,电脑B的一个IP地址是公司局域网分配的,另外一个是虚拟局域网分配的,员工电脑和服务器同理.由于服务器具有公网IP,所以不管员工电脑处在何处局域网,只要能访问到公网IP,就能访问到公司局域网.
+其中公司局域网内的电脑 B 和具有公网 IP 的服务器和员工电脑组成一个局域网, 由于这三者并不是使用物理线路连接组成的局域网, 故称为虚拟局域网. 员工想要访问公司局域网内的资料时, 向具有公网 IP 的服务器发起一个请求, 公网 IP 服务器将请求的内容转发给电脑 B, 电脑 B 访问公司局域网获得资料后返回给服务器, 服务器再转发给员工电脑, 看起来就像员工电脑直接访问公司局域网内部资料.
+由于这里有三个局域网, 所以虚拟局域网中的电脑 (包括服务器) 都有两个 IP 地址, 电脑 B 的一个 IP 地址是公司局域网分配的, 另外一个是虚拟局域网分配的, 员工电脑和服务器同理. 由于服务器具有公网 IP, 所以不管员工电脑处在何处局域网, 只要能访问到公网 IP, 就能访问到公司局域网.
 
 ### 实现思路
 
-在公网服务器上通过openVPN建立虚拟局域网,通过easy-rsa建立CA,给在虚拟局域网中的节点颁发有期限的证书,虚拟局域网节点(电脑)之间通过配置证书文件建立安全的连接.
+在公网服务器上通过 openVPN 建立虚拟局域网, 通过 easy-rsa 建立 CA, 给在虚拟局域网中的节点颁发有期限的证书, 虚拟局域网节点 (电脑) 之间通过配置证书文件建立安全的连接.
 
 ### 具体实现
 
-参考https://www.digitalocean.com/community/tutorials/how-to-set-up-an-openvpn-server-on-ubuntu-16-04
+参考 https://www.digitalocean.com/community/tutorials/how-to-set-up-an-openvpn-server-on-ubuntu-16-04
+
+译文: https://zhuanlan.zhihu.com/p/21434968
 
 下面把一些命令列出来
 
@@ -62,7 +64,7 @@ export KEY_NAME="server"
 . . .
 ```
 
-注意 KEY_COUNTRY只能填两个字母,不要留空
+注意 KEY_COUNTRY 只能填两个字母, 不要留空, KEY_NAME 与后面要 build-key-server 的参数要对应
 
 4. build the Certificate Authority
 
@@ -89,7 +91,7 @@ generate an HMAC signature to strengthen the server's TLS integrity verification
 
 一路回车
 
-注意 client1只是一个标识符,根据上下文决定要不要`source var`
+注意 client1 只是一个标识符, 根据上下文决定要不要 `source var`
 
 7. configure the OpenVPN service
 Copy the Files to the OpenVPN Directory
@@ -116,11 +118,17 @@ Finally, find the user and group settings and remove the ";" at the beginning of
 `user nobody`
 `group nogroup`
 
+(Optional) Push DNS Changes to Redirect All Traffic Through the VPN
+
+`push "redirect-gateway def1 bypass-dhcp"`
+`push "dhcp-option DNS 208.67.222.222"`
+`push "dhcp-option DNS 208.67.220.220"`
+由于此步是可选的, 我第一次做此实验的时候就没有做, 结果就是 ping 不通, 具体表现为: client1/client2 ping server 可以 ping 通, 但是 client1 ping client2 不通, 就是因为 server 没有将 DNS 推送到 client, 所以 client1 找不到 client2
+
 8. adjust the server networking configuration
 Allow IP Forwarding
 `sudo nano /etc/sysctl.conf`
 
-Inside, look for the line that sets net.ipv4.ip_forward. Remove the "#" character from the beginning of the line to uncomment that setting:
 `net.ipv4.ip_forward=1`
 
 To read the file and adjust the values for the current session, type:
@@ -150,7 +158,7 @@ When you have the interface associated with your default route, open the /etc/uf
 # START OPENVPN RULES
 # NAT table rules
 *nat
-:POSTROUTING ACCEPT [0:0] 
+:POSTROUTING ACCEPT [0:0]
 # Allow traffic from OpenVPN client to wlp11s0 (change to the interface you discovered!)
 -A POSTROUTING -s 10.8.0.0/8 -o wlp11s0 -j MASQUERADE
 COMMIT
@@ -166,10 +174,9 @@ We need to tell UFW to allow forwarded packets by default as well. To do this, w
 
 Inside, find the DEFAULT_FORWARD_POLICY directive. We will change the value from DROP to ACCEPT:
 `DEFAULT_FORWARD_POLICY="ACCEPT"`
-
 Open the OpenVPN Port and Enable the Changes
-Next, we'll adjust the firewall itself to allow traffic to OpenVPN.
 
+Next, we'll adjust the firewall itself to allow traffic to OpenVPN.
 If you did not change the port and protocol in the /etc/openvpn/server.conf file, you will need to open up UDP traffic to port 1194. If you modified the port and/or protocol, substitute the values you selected here.
 
 We'll also add the SSH port in case you forgot to add it when following the prerequisite tutorial:
@@ -180,7 +187,7 @@ Now, we can disable and re-enable UFW to load the changes from all of the files 
 `sudo ufw disable`
 `sudo ufw enable`
 Our server is now configured to correctly handle OpenVPN traffic.
-
+注意: 补充一下, Ubuntu16.04 默认是没有开启防火墙的, 现在开启了防火墙, 同时开放 OpenSSH 服务, 会导致其他服务端口被封, 而且当时还意识不到, 因为 ssh 能正常连接, 没有怀疑是防火墙封端口, 但其他服务 (如 Nginx) 又用不了, 找了半天没找到原因, 后来给腾讯云客服发 issue 回复是端口被封才想起了. 事实上, 把防火墙关了还是可以正常运行 OpenVPN 的, 这是后话不提.
 9. start and enable the OpenVPN service
 `sudo systemctl start openvpn@server`
 `sudo systemctl enable openvpn@server`
@@ -287,7 +294,7 @@ Transferring Configuration to Client Devices
 12. install the client configuration
 
 13. test the client
-`sudo openvpn --config client1.ovpn` 
+`sudo openvpn --config client1.ovpn`
 
 14. revoking client certificates
 `cd ~/openvpn-ca`
@@ -302,3 +309,46 @@ Save and close the file.
 Finally, restart OpenVPN to implement the certificate revocation:
 `sudo systemctl restart openvpn@server`
 
+### 测试
+服务器是腾讯云, 两台 PC, 其中一台是我电脑, 系统是 Ubuntu16.04 x86_64 另外一台是 64 位 Windows 7 系统的虚拟机, 两者以 NAT 方式进行网络连接. OpenVPN 服务器, 客户端搭建完毕之后, 腾讯云服务器 VPN IP 是 10.8.0.1, 虚拟机 VPN IP 是 10.8.0.10,Ubuntu VPN IP 是 10.8.0.6, 三者之间可以互相 ping 通.(注意: Windows 虚拟机防火墙要关闭, 否则虚拟机可以 ping 通服务器和 Ubuntu, 而对方不能 ping 通虚拟机)
+虚拟机 ping 服务器
+```
+C:\Users\win7>ping 10.8.0.1
+
+Pinging 10.8.0.1 with 32 bytes of data:
+Reply from 10.8.0.1: bytes=32 time=16ms TTL=64
+Reply from 10.8.0.1: bytes=32 time=12ms TTL=64
+Reply from 10.8.0.1: bytes=32 time=19ms TTL=64
+Reply from 10.8.0.1: bytes=32 time=10ms TTL=64
+
+Ping statistics for 10.8.0.1:
+    Packets: Sent = 4, Received = 4, Lost = 0 (0% loss),
+Approximate round trip times in milli-seconds:
+    Minimum = 10ms, Maximum = 19ms, Average = 14ms
+```
+虚拟机 ping Ubuntu
+```
+C:\Users\win7>ping 10.8.0.6
+
+Pinging 10.8.0.6 with 32 bytes of data:
+Reply from 10.8.0.6: bytes=32 time=22ms TTL=63
+Reply from 10.8.0.6: bytes=32 time=23ms TTL=63
+Reply from 10.8.0.6: bytes=32 time=22ms TTL=63
+Reply from 10.8.0.6: bytes=32 time=24ms TTL=63
+
+Ping statistics for 10.8.0.6:
+    Packets: Sent = 4, Received = 4, Lost = 0 (0% loss),
+Approximate round trip times in milli-seconds:
+    Minimum = 22ms, Maximum = 24ms, Average = 22ms
+```
+Ubuntu ping 服务器 (省略)
+Ubuntu ping 虚拟机 (省略)
+服务器 ping 虚拟机 (省略)
+服务器 ping Ubuntu(省略)
+
+注意:
+在 Windows 下使用 OpenVPN 连接的时候, 需要使用管理员权限的 CMD.exe 切换到 OpenVPN 的 bin 目录再执行 `openvpn.exe --config client2.ovpn`,Ubuntu 同样要用管理员权限.
+
+至此, VPN 搭建成功结束.
+
+使用Nginx进行反向代理.
