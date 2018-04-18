@@ -134,7 +134,10 @@ Plugin 'scrooloose/nerdcommenter'
 
 
 ### VS code
-
+paste image to qiniu(需要先apt install xclip)`Ctrl + Alt + v`
+vscode-icons
+Bracket Pair Colorizer
+vscode-fileheader `Ctrl + Alt + i`
 ## IDE
 
 ### webstorm
