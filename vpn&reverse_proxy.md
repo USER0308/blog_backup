@@ -348,7 +348,58 @@ Ubuntu ping 虚拟机 (省略)
 
 注意:
 在 Windows 下使用 OpenVPN 连接的时候, 需要使用管理员权限的 CMD.exe 切换到 OpenVPN 的 bin 目录再执行 `openvpn.exe --config client2.ovpn`,Ubuntu 同样要用管理员权限.
+再测试访问内网的 Web 服务. 首先在 Ubuntu 上使用 Nginx 搭建了一个简单的服务器, Nginx 配置如下:
+`cat /etc/nginx/sites-enabled/default`
+```
+server {
+	listen 80 default_server;
+	listen [::]:80 default_server;
 
+	root /home/user0308/Tmp/www/html;
+
+	# Add index.php to the list if you are using PHP
+	index index.html index.htm index.nginx-debian.html index.php;
+
+	server_name localhost 127.0.0.1;
+
+	location / {
+		try_files $uri $uri/ =404;
+	}
+}
+
+```
+然后在 /home/user0308/Tmp/www/html/ 文件夹放置一个 index.html 文件, 里面是简单的几行 html, 注意 charset 设置为 utf-8, 否则不识别中文.
+```
+<html>
+<meta charset="utf-8">
+<title>Web</title>
+<h1> 这是一个在内网的网站 </h1>
+</html>
+```
+然后启动 Nginx
+`sudo service nginx start`
+不出意外的话就能成功启动, 在 Ubuntu 浏览器输入网站 localhost 能看到 "这是一个在内网的网站".
+然后在虚拟机浏览器中访问 http://10.8.0.6/ , 不出意外地可以看到 "这是一个在内网的网站"
+![net](http://ovt2bylq8.bkt.clouddn.com/d77fc829cb23fc141953aa694c656305.png)
+于是, 局域网外的用户可以使用局域网中的服务
 至此, VPN 搭建成功结束.
 
-使用Nginx进行反向代理.
+使用 Nginx 进行反向代理.
+使用 Nginx 反向代理是使得没有证书文件的局域网外网所有用户都能访问到局域网内服务器上的内容. 在这里, 局域网内服务器是使用 Nginx 搭建的, 另外需要在 OpenVPN 的 server 上搭建一个 Nginx 服务器做为代理转发. 一定要在 OpenVPN 的 server 上搭建吗? 因为要给所有人访问, 服务器必须要有个公网 IP, 同时服务器必须和局域网内服务器组成一个虚拟局域网, 所以并非一定要在 server 上搭建, 只要某台服务器有公网 IP, 和局域网内服务器组成虚拟局域网都可, 只是 server 所在的服务器刚好都满足, 所以在 server 上搭建 Nginx.
+Nginx 代理服务器配置如下:
+`cat /etc/nginx/sites-enabled/default `
+```
+server {
+	listen 7788 ;
+	location / {
+		try_files $uri $uri/ =404;
+		proxy_pass http://10.8.0.6:80;
+		proxy_set_header Host $host;
+	}
+
+}
+```
+注意这里用非 80 端口, 因为未备案主机的 80,8080,443 等端口都统一被封了
+然后在任意地址访问公网 IP:7788,Nginx 就会将请求转发给 10.8.0.6:80, 外网用户就可以使用内网服务了.
+![](http://ovt2bylq8.bkt.clouddn.com/711d2962362249fd607b7ca9a9656ca5.png)
+至此,反向代理实验完成.
