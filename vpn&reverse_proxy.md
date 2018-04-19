@@ -11,9 +11,9 @@
 |----------------|                                   |------------------|
 |    公司局域网    |                                   |     酒店局域网     |
 |                |                                   |                  |
-|  电脑 A          |                                   |                  |
+|  电脑 A         |                                   |                  |
 |----------------|-----------------------------------|------------------|
-|  电脑 B          |         |  具有公网 IP 的服务器  |     |    员工电脑       |
+|  电脑 B         |       |  具有公网 IP 的服务器  |     |    员工电脑       |
 |----------------|-----------------------------------|------------------|
 |  ...           |                                   |                  |
 ```
@@ -36,11 +36,13 @@
 1. install openvpn
 
 `sudo apt-get update`
+
 `sudo apt-get install openvpn easy-rsa`
 
 2. set up the CA directory
 
 `make-cadir ~/openvpn-ca`
+
 `cd ~/openvpn-ca`
 
 3. config the CA variables
@@ -69,8 +71,11 @@ export KEY_NAME="server"
 4. build the Certificate Authority
 
 `cd ~/openvpn-ca `
+
 `source vars`
+
 `./clean-all`
+
 `./build-ca`
 
 一路回车
@@ -78,15 +83,21 @@ export KEY_NAME="server"
 5. create the server certificate, key, and encryption files
 
 `./build-key-server server`
+
 一路回车
+
 `./build-dh`
+
 generate an HMAC signature to strengthen the server's TLS integrity verification capabilities
+
 `openvpn --genkey --secret keys/ta.key`
 
 6. generate a client certificate and key pair
 
 `cd ~/openvpn-ca`
+
 `source vars`
+
 `./build-key client1`
 
 一路回车
@@ -95,10 +106,15 @@ generate an HMAC signature to strengthen the server's TLS integrity verification
 
 7. configure the OpenVPN service
 Copy the Files to the OpenVPN Directory
+
 `cd ~/openvpn-ca/keys`
+
 `sudo cp ca.crt server.crt server.key ta.key dh2048.pem /etc/openvpn`
+
 `gunzip -c /usr/share/doc/openvpn/examples/sample-config-files/server.conf.gz | sudo tee /etc/openvpn/server.conf`
+
 Adjust the OpenVPN Configuration
+
 `sudo nano /etc/openvpn/server.conf`
 
 First, find the HMAC section by looking for the tls-auth directive. Remove the ";" to uncomment the tls-auth line. Below this, add the key-direction parameter set to "0":
@@ -112,36 +128,47 @@ Next, find the section on cryptographic ciphers by looking for the commented out
 `cipher AES-128-CBC`
 
 Below this, add an auth line to select the HMAC message digest algorithm. For this, SHA256 is a good choice:
+
 `auth SHA256`
 
 Finally, find the user and group settings and remove the ";" at the beginning of to uncomment those lines:
+
 `user nobody`
+
 `group nogroup`
 
 (Optional) Push DNS Changes to Redirect All Traffic Through the VPN
 
 `push "redirect-gateway def1 bypass-dhcp"`
+
 `push "dhcp-option DNS 208.67.222.222"`
+
 `push "dhcp-option DNS 208.67.220.220"`
+
 由于此步是可选的, 我第一次做此实验的时候就没有做, 结果就是 ping 不通, 具体表现为: client1/client2 ping server 可以 ping 通, 但是 client1 ping client2 不通, 就是因为 server 没有将 DNS 推送到 client, 所以 client1 找不到 client2
 
 8. adjust the server networking configuration
 Allow IP Forwarding
+
 `sudo nano /etc/sysctl.conf`
 
 `net.ipv4.ip_forward=1`
 
 To read the file and adjust the values for the current session, type:
+
 `sudo sysctl -p`
 
 Adjust the UFW Rules to Masquerade Client Connections
 Before we open the firewall configuration file to add masquerading, we need to find the public network interface of our machine. To do this, type:
+
 `ip route | grep default`
 
 Your public interface should follow the word "dev". For example, this result shows the interface named wlp11s0, which is highlighted below:
+
 `default via 203.0.113.1 dev wlp11s0  proto static  metric 600`
 
 When you have the interface associated with your default route, open the /etc/ufw/before.rules file to add the relevant configuration:
+
 `sudo nano /etc/ufw/before.rules`
 
 ```
@@ -170,33 +197,48 @@ COMMIT
 ```
 
 We need to tell UFW to allow forwarded packets by default as well. To do this, we will open the /etc/default/ufw file:
+
 `sudo nano /etc/default/ufw`
 
 Inside, find the DEFAULT_FORWARD_POLICY directive. We will change the value from DROP to ACCEPT:
+
 `DEFAULT_FORWARD_POLICY="ACCEPT"`
+
 Open the OpenVPN Port and Enable the Changes
 
 Next, we'll adjust the firewall itself to allow traffic to OpenVPN.
 If you did not change the port and protocol in the /etc/openvpn/server.conf file, you will need to open up UDP traffic to port 1194. If you modified the port and/or protocol, substitute the values you selected here.
 
 We'll also add the SSH port in case you forgot to add it when following the prerequisite tutorial:
+
 `sudo ufw allow 1194/udp`
+
 `sudo ufw allow OpenSSH`
 
 Now, we can disable and re-enable UFW to load the changes from all of the files we've modified:
+
 `sudo ufw disable`
+
 `sudo ufw enable`
+
 Our server is now configured to correctly handle OpenVPN traffic.
 注意: 补充一下, Ubuntu16.04 默认是没有开启防火墙的, 现在开启了防火墙, 同时开放 OpenSSH 服务, 会导致其他服务端口被封, 而且当时还意识不到, 因为 ssh 能正常连接, 没有怀疑是防火墙封端口, 但其他服务 (如 Nginx) 又用不了, 找了半天没找到原因, 后来给腾讯云客服发 issue 回复是端口被封才想起了. 事实上, 把防火墙关了还是可以正常运行 OpenVPN 的, 这是后话不提.
+
 9. start and enable the OpenVPN service
+
 `sudo systemctl start openvpn@server`
+
 `sudo systemctl enable openvpn@server`
 
 10. create client configuration infrastructure
 Creating the Client Config Directory Structure
+
 `mkdir -p ~/client-configs/files`
+
 `chmod 700 ~/client-configs/files`
+
 `cp /usr/share/doc/openvpn/examples/sample-config-files/client.conf ~/client-configs/base.conf`
+
 `nano ~/client-configs/base.conf`
 
 First, locate the remote directive. This points the client to our OpenVPN server address. This should be the public IP address of your OpenVPN server. If you changed the port that the OpenVPN server is listening on, change 1194 to the port you selected:
@@ -210,6 +252,7 @@ remote server_IP_address 1194
 ```
 
 Be sure that the protocol matches the value you are using in the server configuration:
+
 `proto udp`
 
 Next, uncomment the user and group directives by removing the ";":
@@ -239,6 +282,7 @@ auth SHA256
 ```
 
 Next, add the key-direction directive somewhere in the file. This must be set to "1" to work with the server:
+
 `key-direction 1`
 
 Finally, add a few commented out lines. We want to include these with every config, but should only enable them for Linux clients that ship with a /etc/openvpn/update-resolv-conf file. This script uses the resolvconf utility to update DNS information for Linux clients.
@@ -285,28 +329,41 @@ cat ${BASE_CONFIG} \
 11. Generate Client Configurations
 
 `cd ~/client-configs`
+
 `./make_config.sh client1`
+
 If everything went well, we should have a client1.ovpn file in our ~/client-configs/files directory:
 
 Transferring Configuration to Client Devices
+
 `local$ sftp sammy@openvpn_server_ip:client-configs/files/client1.ovpn ~/`
 
 12. install the client configuration
 
 13. test the client
+
 `sudo openvpn --config client1.ovpn`
 
 14. revoking client certificates
+
 `cd ~/openvpn-ca`
+
 `source vars`
+
 `./revoke-full client3`
+
 `sudo cp ~/openvpn-ca/keys/crl.pem /etc/openvpn`
+
 `sudo nano /etc/openvpn/server.conf`
+
 At the bottom of the file, add the crl-verify option, so that the OpenVPN server checks the certificate revocation list that we've created each time a connection attempt is made:
+
 `crl-verify crl.pem`
+
 Save and close the file.
 
 Finally, restart OpenVPN to implement the certificate revocation:
+
 `sudo systemctl restart openvpn@server`
 
 ### 测试
@@ -342,14 +399,19 @@ Approximate round trip times in milli-seconds:
     Minimum = 22ms, Maximum = 24ms, Average = 22ms
 ```
 Ubuntu ping 服务器 (省略)
+
 Ubuntu ping 虚拟机 (省略)
+
 服务器 ping 虚拟机 (省略)
+
 服务器 ping Ubuntu(省略)
 
 注意:
 在 Windows 下使用 OpenVPN 连接的时候, 需要使用管理员权限的 CMD.exe 切换到 OpenVPN 的 bin 目录再执行 `openvpn.exe --config client2.ovpn`,Ubuntu 同样要用管理员权限.
 再测试访问内网的 Web 服务. 首先在 Ubuntu 上使用 Nginx 搭建了一个简单的服务器, Nginx 配置如下:
+
 `cat /etc/nginx/sites-enabled/default`
+
 ```
 server {
 	listen 80 default_server;
@@ -377,17 +439,23 @@ server {
 </html>
 ```
 然后启动 Nginx
+
 `sudo service nginx start`
+
 不出意外的话就能成功启动, 在 Ubuntu 浏览器输入网站 localhost 能看到 "这是一个在内网的网站".
 然后在虚拟机浏览器中访问 http://10.8.0.6/ , 不出意外地可以看到 "这是一个在内网的网站"
+
 ![net](http://ovt2bylq8.bkt.clouddn.com/d77fc829cb23fc141953aa694c656305.png)
+
 于是, 局域网外的用户可以使用局域网中的服务
 至此, VPN 搭建成功结束.
 
 使用 Nginx 进行反向代理.
 使用 Nginx 反向代理是使得没有证书文件的局域网外网所有用户都能访问到局域网内服务器上的内容. 在这里, 局域网内服务器是使用 Nginx 搭建的, 另外需要在 OpenVPN 的 server 上搭建一个 Nginx 服务器做为代理转发. 一定要在 OpenVPN 的 server 上搭建吗? 因为要给所有人访问, 服务器必须要有个公网 IP, 同时服务器必须和局域网内服务器组成一个虚拟局域网, 所以并非一定要在 server 上搭建, 只要某台服务器有公网 IP, 和局域网内服务器组成虚拟局域网都可, 只是 server 所在的服务器刚好都满足, 所以在 server 上搭建 Nginx.
 Nginx 代理服务器配置如下:
+
 `cat /etc/nginx/sites-enabled/default `
+
 ```
 server {
 	listen 7788 ;
@@ -401,5 +469,7 @@ server {
 ```
 注意这里用非 80 端口, 因为未备案主机的 80,8080,443 等端口都统一被封了
 然后在任意地址访问公网 IP:7788,Nginx 就会将请求转发给 10.8.0.6:80, 外网用户就可以使用内网服务了.
+
 ![](http://ovt2bylq8.bkt.clouddn.com/711d2962362249fd607b7ca9a9656ca5.png)
+
 至此,反向代理实验完成.
