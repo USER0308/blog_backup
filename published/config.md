@@ -138,6 +138,12 @@ paste image to qiniu(需要先apt install xclip)`Ctrl + Alt + v`
 vscode-icons
 Bracket Pair Colorizer
 vscode-fileheader `Ctrl + Alt + i`
+key: `Ctrl + B` open/close side bar
+`Ctrl + Shift + E` file explorer
+`Ctrl + P` open file
+`Ctrl + 1` focus on the firsr editor
+
+
 ## IDE
 
 ### webstorm
@@ -193,3 +199,6 @@ map ? showHelp
 `sys`: system exit/logout
 `dict`: translate
 `run`: run in shell
+
+### Document Viewer
+key:`F9` show/hide side bar
