@@ -202,3 +202,7 @@ map ? showHelp
 
 ### Document Viewer
 key:`F9` show/hide side bar
+
+### Diodon
+`Ctrl + C`
+`Ctrl + V`
