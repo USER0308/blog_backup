@@ -56,3 +56,11 @@
 ### Script
 
 ### 多方签名
+
+Appendex:
+https://en.bitcoin.it/wiki/Technical_background_of_version_1_Bitcoin_addresses
+https://en.bitcoin.it/wiki/Wallet_import_format
+https://www.jianshu.com/p/af6328cc693e
+https://www.jianshu.com/p/07693c746aa9
+https://www.jianshu.com/p/c792aa0e273d
+https://www.jianshu.com/p/a138b20dd1ae
