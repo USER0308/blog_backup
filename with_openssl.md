@@ -1,8 +1,10 @@
-# openssl
+# 使用 openssl 的库函数生成比特币签名
 
-使用 openssl 的库函数生成签名
+> 使用 openssl 的库函数生成签名
+> 项目地址: https://github.com/keeshux/basic-blockchain-programming
 
-文件列表:
+### 文件列表
+
 ```
 base58.h
 common.h
@@ -24,21 +26,26 @@ ex-wif.c
 tx.h
 varint.h
 ```
-base58.h
+
+### base58.h
+
 提供两个函数, base58 和 base58check
 base58 负责编码, base58check 负责生成摘要和校验码
 
-common.h
+### common.h
+
 bbp_print_hex: 打印输出十六进制格式
 bbp_hex2byte: 将单个字符转化为 byte
 bbp_parse_hex: 将字符串通过调用 bbp_hex2byte 转化为十六进制, 每两个字符为一组, 转化成一个十六进制单位
 bbp_alloc_hex: 和 bbp_parse_hex 功能一样
 
-ec.h
+### ec.h
+
 bbp_ec_new_keypair: 创建公私钥对
 bbp_ec_new_pubkey: 通过 pubkey 的 byte 形式转化为 Key 形式
 
-endian.h
+### endian.h
+
 bbp_host_endian: 判断宿主机是大端还是小端
 bbp_swap16: 将 16 bit 左右 8 bit 交换
 bbp_swap32: 将 32 bit 分成 4 份, 0,1,2,3; 交换后变成 3,2,1,0
@@ -51,4 +58,4 @@ bbp_reverse:
 
 目前完成功能:
 除了本来已完成的功能外
-多方签名钱包地址和redeemScript的构建
+多方签名钱包地址和 redeemScript 的构建
