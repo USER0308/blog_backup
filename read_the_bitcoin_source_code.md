@@ -1,3 +1,0 @@
-# 多方签名在比特币源码
-
-切入点为bitcoind.cpp,因为操作比特币的命令都是bitcoind,可以看出这是个守护进程.接着寻找解析参数的代码.因为是要看的功能是多方签名,先找生成公私钥,钱包地址的代码.生成钱包地址的命令是`bitcoind getnewaddress`,全局查找`getnewaddress`,找到rpcwallet.cpp,调用了Cwallet的GetKeyFromPool,然后去看Cwallet的GetKeyFromPool,调用自身的GenerateNewKey,设定当前时间作为一些原数据,调用CKey的MakeNewKey,然后看key.cpp,MakeNewKey循环调用了GetStrongRandBytes,直到secp256k1_ec_seckey_verify(secp256k1_context_sign, vch)通过.查看头文件,include进了<random.h>和<secp256k1.h>,果然在<random.h>中找到了GetStrongRandBytes,在<secp256k1.h>中391行找到了secp256k1_ec_seckey_verify,
