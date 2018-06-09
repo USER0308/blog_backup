@@ -1,0 +1,212 @@
+正确情况
+# 创建用户
+http://localhost:8000/register/
+method:post
+form-data:{"username":"","password":""}
+return:{"username":"","password":""}
+status:201_CREATED
+
+# 获取认证Token
+http://localhost:8000/oauth2/access_token/
+method:post
+form_data:
+{
+	"username":"",
+	"password":"",
+	"grant_type":"password",
+}
+return:
+{
+    "access_token": "bcd90bca842a4aa103c02e0efd78a1402e9d5d01",
+    "token_type": "Bearer",
+    "expires_in": 2591999,
+    "scope": "read"
+}
+status:200
+
+# 新建todo
+url:http://localhost:8000/todos/
+method:post
+header:
+{
+	'Content-Type: application/json',
+	'Authorization: bearer bcd90bca842a4aa103c02e0efd78a1402e9d5d01'
+}
+form_data:
+{
+	"description":"bake a bread"
+}
+return:
+{
+    "description": "bake a bread",
+    "id": 1
+}
+status:201_CREATED
+
+获取所有todo
+url:http://localhost:8000/todos/
+method:get
+header:
+{
+	"Content-Type":"application/json",
+	"Authorization":"bearer bcd90bca842a4aa103c02e0efd78a1402e9d5d01"
+}
+return:
+[
+    {
+        "id": 1,
+        "description": "bake a bread",
+        "done": false
+    }
+]
+status:200 OK
+
+更新todo
+url:http://localhost:8000/todos/1
+method:put
+header:
+{
+	"Content-Type":"application/json",
+	"Authorization":"bearer bcd90bca842a4aa103c02e0efd78a1402e9d5d01"
+}
+form_data:
+{
+	"description":"bake a bread",
+	"done":"True"
+}
+无return
+status:200 OK
+
+异常情况
+# 创建用户
+case1:用户已存在
+return:
+{
+    "username": [
+        "User with this Username already exists."
+    ]
+}
+status:400 BAD REQUEST
+case2:用户名输入为空
+return:
+{
+    "username": [
+        "This field is required."
+    ]
+}
+status:400 BAD REQUEST
+
+case3:密码输入为空
+return:
+{
+    "username": [
+        "This field is required."
+    ]
+}
+status:400 BAD REQUEST
+
+case4:用户名和密码为空
+return:
+{
+    "username": [
+        "This field is required."
+    ],
+    "password": [
+        "This field is required."
+    ]
+}
+status:400 BAD REQUEST
+
+# 获取认证Token
+case1:用户不存在/密码错误
+return:
+{
+    "error": "invalid_client"
+}
+status:400 BAD REQUEST
+
+case2:client_id 错误
+return:
+{
+    "error": "invalid_client"
+}
+status:400 BAD REQUEST
+
+case3:grant_type 错误
+return:
+{
+    "error": "unsupported_grant_type"
+}
+status:400 BAD REQUEST
+
+# 新建todo
+case1:缺少Content-Type:application/json
+正常执行
+
+case2:缺少Authorization
+return:
+{
+    "detail": "Authentication credentials were not provided."
+}
+status:401 UNAUTHORIZED
+
+case3:缺少form_data
+return:
+{
+    "description": [
+        "This field is required."
+    ]
+}
+status:400 BAD REQUEST
+
+case4:新建的todo与已有的重复
+正常执行
+
+case5:错误的Token
+return:
+{
+    "detail": "Invalid token"
+}
+status:401 UNAUTHORIZED
+
+# 获取所有todo
+case1:缺少Content-Type:application/json
+正常执行
+
+case2:缺少Authorization
+return:
+{
+    "detail": "Authentication credentials were not provided."
+}
+status:401 UNAUTHORIZED
+
+case3:错误的Token
+return:
+{
+    "detail": "Invalid token"
+}
+status:401 UNAUTHORIZED
+
+# 更新todo
+case1:缺少Content-Type:application/json
+正常执行
+
+case2:缺少Authorization
+无返回值
+status:401 UNAUTHORIZED
+
+case3:错误的Token
+无返回值
+status:401 UNAUTHORIZED
+
+case4:description改变
+无返回值
+status:200 OK
+
+case5:done值非True/False
+无返回值,false/False时done状态才更改为fasle,其余情况为true
+status:200 OK
+
+case6:将请求发送到其余todo的id的url(http://localhost:8000/todos/3)
+无返回值,若不存在则新建一个,若存在则覆盖
+status:200 OK
