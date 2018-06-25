@@ -100,3 +100,23 @@ IBookDAO.xml与IBookDAO.java函数的函数名,参数必须一一对应.xml中�
 
 (3)
 IBookDAO.java中接口函数为标准数据类型时需要加上`@Param("XXXX")`,XXXX与IBookDAO.xml中参数名一致
+
+## 参考链接
+
+[spring mybatis 整合后mapper接口注入失败问题](https://blog.csdn.net/u012012240/article/details/51252560)
+
+[深入浅出Mybatis系列（七）---mapper映射文件配置之insert、update、delete](https://www.cnblogs.com/dongying/p/4048828.html)
+
+[解决org.apache.ibatis.binding.BindingException: Invalid bound statement (not found)错误](https://blog.csdn.net/oMrLeft123/article/details/70239951)
+
+[mybatis配置时出现org.apache.ibatis.binding.BindingException: Invalid bound statement (not found)](https://www.cnblogs.com/lfm601508022/p/InvalidBoundStatement.html)
+
+[求指教:Property 'mapperLocations' was not specified or no matching resources found    (配置文件示例)](https://www.imooc.com/qadetail/160149?t=222241)
+
+[Invalid bound statement (not found)](https://blog.csdn.net/sdlyjzh/article/details/54861571)
+
+[碰到no suitable driver found for jdbc:mysql//localhost:3306/qzhao 错误](http://www.iteye.com/problems/24112)
+
+[ubuntu下mysql不能用IP地址访问的问题解决](https://blog.csdn.net/scgh_fx/article/details/80497782)
+
+[手把手教你整合最优雅SSM框架：SpringMVC + Spring + MyBatis    (测试数据库能通过,但前端controller部分还没测试过)](https://blog.csdn.net/qq598535550/article/details/51703190)
